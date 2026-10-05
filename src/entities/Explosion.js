@@ -1,40 +1,26 @@
 import Phaser from 'phaser';
 
-// Explosión en pool. Se anima a mano en update() para no crear un tween por explosión.
-const DURATION = 300;   // ms
-const START_SCALE = 0.5;
-const END_SCALE = 3;
+// Explosión animada (atlas fx) en pool. Al terminar la animación vuelve al pool.
+const BASE_SCALE = 0.8;
 
-export default class Explosion extends Phaser.GameObjects.Image {
+export default class Explosion extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y) {
-        super(scene, x, y, 'spark');
-        this.elapsed = 0;
-        this.size = 1;
+        super(scene, x, y, 'fx', 'fx_boom_0001');
         this.setDepth(10);       // por encima de aviones y enemigos
+        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => this.kill());
     }
 
     // size: multiplicador de tamaño
-    play(x, y, tint = 0xffa500, size = 1) {
-        this.size = size;
+    boom(x, y, size = 1) {
         this.setPosition(x, y);
-        this.setTint(tint);
-        this.setScale(START_SCALE * size);
-        this.setAlpha(1);
+        this.setScale(BASE_SCALE * size * Phaser.Math.FloatBetween(0.9, 1.1));
+        this.setAngle(Phaser.Math.Between(-30, 30)); // cada una se ve un poco distinta
         this.setActive(true).setVisible(true);
-        this.elapsed = 0;
-    }
-
-    update(time, delta) {
-        this.elapsed += delta;
-        const t = Math.min(this.elapsed / DURATION, 1);
-
-        this.setScale((START_SCALE + (END_SCALE - START_SCALE) * t) * this.size);
-        this.setAlpha(1 - t);
-
-        if (t >= 1) this.kill();
+        this.play('fx_boom');
     }
 
     kill() {
+        this.stop();
         this.setActive(false).setVisible(false);
     }
 }

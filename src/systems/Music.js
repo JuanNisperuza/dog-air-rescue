@@ -1,5 +1,5 @@
-import { SOUND } from '../config/constants.js';
 import { isMuted } from './Sfx.js';
+import { musicVolume } from './settings.js';
 
 // Música de fondo con un <audio> normal en vez del loader de Phaser: así va en
 // streaming y no se decodifica la canción entera en memoria (~160 MB para 7 min).
@@ -23,7 +23,7 @@ class Music {
         this.audio.preload = 'auto';
         this.audio.volume = 0;
 
-        this.targetVolume = SOUND.musicVolume;
+        this.targetVolume = musicVolume();
         this.muted = isMuted(); // recuerda si el jugador silenció el juego
         this.fadeFrame = null;
         this.waitingForInput = false;
@@ -60,6 +60,11 @@ class Music {
             if (t < 1) this.fadeFrame = requestAnimationFrame(step);
         };
         this.fadeFrame = requestAnimationFrame(step);
+    }
+
+    // Volumen normal según Options; factor < 1 para bajarla (ej. al terminar la partida)
+    restore(factor = 1, duration = 800) {
+        this.fadeTo(musicVolume() * factor, duration);
     }
 
     setMuted(muted) {

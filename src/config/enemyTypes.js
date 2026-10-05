@@ -9,6 +9,7 @@ export const ENEMY_TYPES = {
     flyer: {
         sprite: { prefix: 'cat_flyer_', anims: { fly: 4 }, fps: 8, center: { x: 29, y: 55 } },
         behavior: 'sine',
+        death: 'pop',           // pop | spin | chain (ver entities/Corpse.js)
         hp: 2,
         speed: 200,
         radius: 24,
@@ -24,6 +25,8 @@ export const ENEMY_TYPES = {
             center: { x: 74, y: 34 }, muzzle: { x: -37, y: 6 }
         },
         behavior: 'gunner',
+        death: 'spin',
+        drop: 0.3,              // probabilidad de soltar un power-up
         hp: 5,
         speed: 240,
         radius: 26,
@@ -39,6 +42,8 @@ export const ENEMY_TYPES = {
     diver: {
         sprite: { prefix: 'cat_diver_', anims: { fly: 4, warn: 1, dash: 3 }, fps: 12, center: { x: 48, y: 31 } },
         behavior: 'diver',
+        death: 'spin',
+        drop: 0.08,
         hp: 2,
         speed: 260,
         radius: 20,
@@ -55,6 +60,8 @@ export const ENEMY_TYPES = {
             center: { x: 105, y: 70 }, muzzle: { x: -25, y: 30 }
         },
         behavior: 'heavy',
+        death: 'chain',
+        drop: 1,
         hp: 30,
         speed: 60,
         radius: 50,
@@ -63,7 +70,6 @@ export const ENEMY_TYPES = {
         spread: 5,              // balas por ráfaga
         spreadAngle: 14,        // grados entre balas
         bulletSpeed: 230,
-        diesOnContact: false,   // si lo chocas, NO muere (tú sí recibes daño)
-        explosionSize: 2.5
+        diesOnContact: false    // si lo chocas, no muere (tú sí recibes daño)
     }
 };

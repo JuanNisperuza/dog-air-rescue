@@ -50,6 +50,7 @@ export const BEHAVIORS = {
                 case 'enter':
                     if (e.x <= e.stopAt) {
                         e.state = 'attack';
+                        e.scene.fx.emote(e, '!', '#ffeb3b');
                         e.setVelocityX(0);
                         e.nextShot = now + 350;
                     }
@@ -90,6 +91,7 @@ export const BEHAVIORS = {
                         e.state = 'windup';
                         e.setVelocity(40, 0);
                         e.playAnim('warn'); // ojos rojos
+                        e.scene.fx.emote(e, '!!', '#ff5252');
                         e.scene.fx.enemyTelegraph();
                         e.dashAt = now + e.stat('windup');
                     }

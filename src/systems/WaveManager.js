@@ -3,18 +3,18 @@ import { WAVES, DEBUG } from '../config/constants.js';
 import { WAVE_LIST } from '../config/waves.js';
 
 // Genera las oleadas. Al empezar una, convierte sus grupos en una cola de apariciones
-// ordenada por tiempo y en cada frame saca las que ya tocan. Cuando se acaba la lista,
-// vuelve a empezar con más dificultad.
+// ordenada por tiempo y en cada frame saca las que ya tocan. Cuando termina la última
+// avisa con onComplete (ahí GameScene trae al jefe).
 const SPAWN_MARGIN = 60; // px a la derecha de la pantalla donde aparecen
 
 export default class WaveManager {
-    constructor(scene, enemies) {
+    constructor(scene, enemies, onComplete) {
         this.scene = scene;
         this.enemies = enemies;
+        this.onComplete = onComplete;
 
         this.waveIndex = -1;
-        this.loop = 0;          // cuántas veces se completó la lista
-        this.waveNumber = 0;    // número que ve el jugador (1, 2, 3...)
+        this.total = WAVE_LIST.length;
 
         // Multiplicadores de dificultad, compartidos por todos los enemigos
         this.difficulty = { hp: 1, speed: 1, fireRate: 1 };
@@ -23,10 +23,17 @@ export default class WaveManager {
         this.queueIndex = 0;
 
         this.state = 'break';
-        this.nextWaveAt = scene.time.now + WAVES.firstDelay;
+        this.nextWaveAt = scene.now + WAVES.firstDelay;
+    }
+
+    // Cuántas oleadas se terminaron, de 0 a 1 (para la barra de progreso)
+    get progress() {
+        const done = this.state === 'done' ? this.total : Math.max(0, this.waveIndex);
+        return done / this.total;
     }
 
     update(now) {
+        if (this.state === 'done') return;
         if (this.state === 'break') {
             if (now >= this.nextWaveAt) this.startNextWave(now);
             return;
@@ -39,6 +46,11 @@ export default class WaveManager {
 
         // Terminó la oleada: ya salieron todos y no queda ninguno vivo
         if (this.queueIndex >= this.queue.length && this.enemies.countActive() === 0) {
+            if (this.waveIndex >= this.total - 1) {
+                this.state = 'done';
+                this.onComplete?.();
+                return;
+            }
             this.state = 'break';
             this.nextWaveAt = now + WAVES.breakTime;
         }
@@ -46,28 +58,22 @@ export default class WaveManager {
 
     startNextWave(now) {
         this.waveIndex++;
-        if (this.waveIndex >= WAVE_LIST.length) {
-            this.waveIndex = 0;
-            this.loop++;
-            this.difficulty.hp = 1 + WAVES.loopHp * this.loop;
-            this.difficulty.speed = 1 + WAVES.loopSpeed * this.loop;
-            this.difficulty.fireRate = 1 + WAVES.loopFireRate * this.loop;
-        }
-
         const wave = WAVE_LIST[this.waveIndex];
-        this.waveNumber++;
 
         this.queue.length = 0;
         this.queueIndex = 0;
         for (const group of wave.groups) {
             this.expandFormation(group, now);
         }
+        for (const rescue of wave.rescues ?? []) {
+            this.queue.push({ at: now + rescue.at, puppy: true, y: rescue.y * this.scene.scale.height });
+        }
         this.queue.sort((a, b) => a.at - b.at);
 
         this.state = 'running';
 
         // Las oleadas no se muestran al jugador; con DEBUG salen en consola
-        if (DEBUG) console.log(`[Wave ${this.waveNumber}] ${wave.name} (loop ${this.loop})`);
+        if (DEBUG) console.log(`[Wave ${this.waveIndex + 1}/${this.total}] ${wave.name}`);
     }
 
     // Convierte un grupo (formación) en apariciones individuales
@@ -115,6 +121,10 @@ export default class WaveManager {
     }
 
     spawn(entry) {
+        if (entry.puppy) {
+            this.scene.spawnPuppy(entry.y);
+            return;
+        }
         const enemy = this.enemies.get(entry.x, entry.y);
         if (enemy) {
             enemy.spawn(entry.x, entry.y, entry.type, entry.params, this.difficulty);

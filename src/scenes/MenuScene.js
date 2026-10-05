@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
-import { PLAYER, SOUND } from '../config/constants.js';
+import { PLAYER } from '../config/constants.js';
 import { SKINS } from '../config/skins.js';
 import Sfx from '../systems/Sfx.js';
 import { getMusic } from '../systems/Music.js';
 import { load } from '../systems/storage.js';
 import ParallaxBackground from '../systems/ParallaxBackground.js';
+import { applyFilm } from '../systems/OldFilmPipeline.js';
+import { irisIn, irisOut } from './TransitionScene.js';
 
 // Menú principal. Se navega con las flechas + Enter/Espacio/X o con el mouse.
 const TEXT = {
@@ -12,19 +14,19 @@ const TEXT = {
     subtitle: 'a tiny shoot \'em up',
     play: 'PLAY',
     howTo: 'HOW TO PLAY',
-    soundOn: 'SOUND: ON',
-    soundOff: 'SOUND: OFF',
+    options: 'OPTIONS',
     best: 'BEST',
+    grade: 'GRADE',
     credits: 'Music: "Dark Forest" by Holizna (CC0)',
     controlsTitle: 'HOW TO PLAY',
     controls: [
         ['MOVE', 'Arrows / WASD'],
         ['SHOOT', 'Hold X / Space'],
-        ['MUTE', 'M'],
-        ['RETRY', 'R'],
-        ['MENU', 'Esc']
+        ['SUPER', 'C / Shift (when full)'],
+        ['PAUSE', 'Esc / P'],
+        ['MUTE', 'M']
     ],
-    tip: 'Tip: you shoot upward while climbing\nand downward while diving.',
+    tip: 'Rescue the puppies in bubbles, grab power-ups\nand beat the boss! On mobile: drag to move, it fires on its own.',
     close: 'Press any key to go back'
 };
 
@@ -39,56 +41,64 @@ export default class MenuScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.scale;
-        this.scene.stop('UIScene'); // por si venimos de una partida
+        // Por si venimos de una partida
+        for (const key of ['UIScene', 'PauseScene', 'ResultsScene', 'OptionsScene']) this.scene.stop(key);
 
         this.sfx = new Sfx(this);
         this.music = getMusic();
         this.music.play();
-        this.music.fadeTo(SOUND.musicVolume, 800);
+        this.music.restore();
 
         // Fondo
         this.background = new ParallaxBackground(this);
+        applyFilm(this);
 
         // Personaje volando
         const skinKey = PLAYER.skin;
         const skin = SKINS[skinKey];
-        this.hero = this.add.sprite(250, height / 2 + 40, skin.atlas)
-            .setScale(1.3)
+        this.hero = this.add.sprite(250, height / 2 + 40, skin.atlas, this.anims.get(`${skinKey}_idle_straight`).frames[0].frame.name)
+            .setScale(1.1)
             .play(`${skinKey}_idle_straight`);
+        this.hero.setOrigin(skin.canvasCenter.x / this.hero.width, skin.canvasCenter.y / this.hero.height);
         this.heroBaseY = this.hero.y;
 
-        // Título
-        this.title = this.add.text(width / 2, 95, TEXT.title, {
-            fontFamily: FONT,
-            fontSize: '72px',
-            color: '#ffd54f',
-            stroke: '#4e342e',
-            strokeThickness: 12
-        }).setOrigin(0.5).setShadow(6, 6, '#00000055', 0, true, true);
+        // Entra volando desde la izquierda
+        this.hero.setX(-160);
+        this.tweens.add({ targets: this.hero, x: 250, duration: 1100, delay: 200, ease: 'Back.Out' });
 
-        this.add.text(width / 2, 160, TEXT.subtitle, {
+        // Humo del motor también en el menú
+        const exhaust = skin.exhaust;
+        const smoke = this.add.particles(0, 0, 'fx', {
+            frame: ['fx_puff_0001', 'fx_puff_0002', 'fx_puff_0003'],
+            speedX: { min: -170, max: -100 },
+            speedY: { min: -18, max: 18 },
+            lifespan: { min: 380, max: 560 },
+            scale: { start: 0.15, end: 0.45 },
+            rotate: { min: -60, max: 60 },
+            alpha: { start: 0.7, end: 0 },
+            tint: [0xb0b0b0, 0x9a9a9a, 0x808080],
+            frequency: 40
+        });
+        smoke.startFollow(this.hero, exhaust.x * 1.1, exhaust.y * 1.1);
+        this.children.moveBelow(smoke, this.hero);
+
+        // Título: cada letra cae por separado y después ondulan como una bandera
+        this.createTitle(width / 2, 95);
+
+        const subtitle = this.add.text(width / 2, 160, TEXT.subtitle, {
             fontFamily: FONT,
             fontSize: '20px',
             color: '#ffffff',
             stroke: '#4e342e',
             strokeThickness: 5
-        }).setOrigin(0.5);
-
-        this.tweens.add({
-            targets: this.title,
-            scale: 1.05,
-            angle: { from: -2, to: 2 },
-            duration: 1400,
-            yoyo: true,
-            repeat: -1,
-            ease: 'Sine.InOut'
-        });
+        }).setOrigin(0.5).setAlpha(0);
+        this.tweens.add({ targets: subtitle, alpha: 1, y: { from: 175, to: 160 }, duration: 400, delay: 1100 });
 
         // Botones
         this.buttons = [
             { label: () => TEXT.play, action: () => this.startGame() },
             { label: () => TEXT.howTo, action: () => this.showHowTo() },
-            { label: () => (this.sfx.muted ? TEXT.soundOff : TEXT.soundOn), action: () => this.toggleSound() }
+            { label: () => TEXT.options, action: () => this.showOptions() }
         ];
 
         const menuX = width * 0.66;
@@ -103,38 +113,89 @@ export default class MenuScene extends Phaser.Scene {
 
             button.text.on('pointerover', () => this.select(i));
             button.text.on('pointerdown', () => this.activate());
+
+            // Entran desde la derecha, una tras otra
+            button.text.setX(width + 150);
+            this.tweens.add({ targets: button.text, x: menuX, duration: 500, delay: 700 + i * 110, ease: 'Back.Out' });
         });
 
         this.cursor = this.add.text(0, 0, '▶', {
             fontFamily: FONT, fontSize: '28px', color: COLOR_SELECTED, stroke: '#000000', strokeThickness: 6
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setAlpha(0);
+        this.tweens.add({ targets: this.cursor, alpha: 1, duration: 200, delay: 1200 });
 
         // Pie
         const best = load('best', 0);
-        this.add.text(16, height - 14, `${TEXT.best} ${best}`, {
-            fontFamily: FONT, fontSize: '22px', color: '#ffffff', stroke: '#000000', strokeThickness: 5
-        }).setOrigin(0, 1);
-        this.add.text(width - 16, height - 14, TEXT.credits, {
-            fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
-        }).setOrigin(1, 1);
+        const grade = load('bestGrade', null);
+        const record = grade ? `${TEXT.best} ${best}   ${TEXT.grade} ${grade}` : `${TEXT.best} ${best}`;
+        const footer = [
+            this.add.text(16, height - 14, record, {
+                fontFamily: FONT, fontSize: '22px', color: '#ffffff', stroke: '#000000', strokeThickness: 5
+            }).setOrigin(0, 1),
+            this.add.text(width - 16, height - 14, TEXT.credits, {
+                fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
+            }).setOrigin(1, 1)
+        ];
+        for (const text of footer) {
+            text.setAlpha(0);
+            this.tweens.add({ targets: text, alpha: 1, y: { from: height + 10, to: height - 14 }, duration: 400, delay: 1300 });
+        }
 
         this.createHowToPanel();
 
         // Teclado
         this.selected = 0;
+        this.pressing = false;
         this.select(0, true);
         this.transitioning = false;
 
         this.input.keyboard.on('keydown', this.onKey, this);
 
-        this.cameras.main.fadeIn(400, 0, 0, 0);
+        // Recordar si se juega con el dedo (el HUD muestra los controles táctiles)
+        this.input.on('pointerdown', (pointer) => {
+            if (pointer.wasTouch) this.registry.set('touchMode', true);
+        });
+
+        // Cada tanto el perrito hace un rizo
+        this.heroX = 250;
+        this.loop = { t: 0 };
+        this.time.addEvent({
+            delay: 6500,
+            startAt: 3500,
+            loop: true,
+            callback: () => {
+                if (this.transitioning) return;
+                this.loop.t = 0;
+                this.tweens.add({ targets: this.loop, t: 1, duration: 1500, ease: 'Sine.InOut' });
+            }
+        });
+
+        irisIn(this, this.hero.x, this.hero.y);
     }
 
     update(time, delta) {
         this.background.update(delta);
+        this.background.sun.lookAt(this.hero.x, this.hero.y);
 
         this.hero.y = this.heroBaseY + Math.sin(time * 0.002) * 14;
         this.hero.angle = Math.cos(time * 0.002) * 4;
+
+        // Rizo: da una vuelta completa en el aire
+        if (this.loop.t > 0 && this.loop.t < 1) {
+            const theta = this.loop.t * Math.PI * 2;
+            this.hero.x = this.heroX + Math.sin(theta) * 75;
+            this.hero.y -= (1 - Math.cos(theta)) * 75;
+            this.hero.angle = -Phaser.Math.RadToDeg(theta);
+        }
+
+        // Las letras del título ondulan (cuando ya cayeron)
+        for (const letter of this.letters) {
+            if (letter.landed) letter.y = Math.sin(time * 0.004 - letter.index * 0.45) * 5;
+        }
+
+        // El botón elegido se mece un poquito
+        const current = this.buttons[this.selected].text;
+        if (!this.pressing) current.angle = Math.sin(time * 0.005) * 2.5;
 
         const button = this.buttons[this.selected].text;
         this.cursor.x = button.x - button.width / 2 - 28 + Math.sin(time * 0.01) * 4;
@@ -164,7 +225,7 @@ export default class MenuScene extends Phaser.Scene {
                 this.activate();
                 break;
             case 'KeyM':
-                this.toggleSound();
+                this.toggleMute();
                 break;
         }
     }
@@ -176,40 +237,124 @@ export default class MenuScene extends Phaser.Scene {
         this.buttons.forEach((button, i) => {
             const isSelected = i === index;
             button.text.setColor(isSelected ? COLOR_SELECTED : COLOR_IDLE);
-            this.tweens.killTweensOf(button.text);
-            this.tweens.add({
+            if (!isSelected) button.text.setAngle(0);
+            // Solo se corta el tween de escala, así no se interrumpe la entrada
+            button.scaleTween?.stop();
+            button.scaleTween = this.tweens.add({
                 targets: button.text,
                 scale: isSelected ? 1.15 : 1,
-                duration: 120,
+                duration: 140,
                 ease: 'Back.Out'
             });
         });
+
+        // El cursor salta a la nueva opción
+        if (!silent) {
+            this.cursor.setScale(1.6);
+            this.tweens.add({ targets: this.cursor, scale: 1, duration: 200, ease: 'Back.Out' });
+        }
 
         if (!silent) this.sfx.uiMove();
     }
 
     activate() {
-        if (this.transitioning || this.panel.visible) return;
-        this.buttons[this.selected].action();
+        if (this.transitioning || this.panel.visible || this.pressing) return;
+        const button = this.buttons[this.selected];
+
+        // Aplastón de caricatura y después la acción
+        this.pressing = true;
+        button.scaleTween?.stop();
+        button.text.setAngle(0);
+        this.tweens.chain({
+            targets: button.text,
+            tweens: [
+                { scaleX: 1.45, scaleY: 0.85, duration: 60, ease: 'Quad.Out' },
+                { scaleX: 1.05, scaleY: 1.3, duration: 70, ease: 'Quad.Out' },
+                { scaleX: 1.15, scaleY: 1.15, duration: 90, ease: 'Back.Out' }
+            ],
+            onComplete: () => { this.pressing = false; }
+        });
+        button.action();
+    }
+
+    // Cada letra es un texto aparte para poder animarla sola
+    createTitle(x, y) {
+        const style = { fontFamily: FONT, fontSize: '72px', color: '#ffd54f', stroke: '#4e342e', strokeThickness: 12 };
+        this.titleGroup = this.add.container(x, y);
+        this.letters = [];
+
+        const spaceWidth = 22;
+        let cursorX = 0;
+        [...TEXT.title].forEach((char) => {
+            if (char === ' ') {
+                cursorX += spaceWidth;
+                return;
+            }
+            const letter = this.add.text(cursorX, 0, char, style).setOrigin(0, 0.5)
+                .setShadow(6, 6, '#00000055', 0, true, true);
+            cursorX += letter.width - 12; // el borde grueso se monta un poco
+            letter.index = this.letters.length;
+            this.letters.push(letter);
+            this.titleGroup.add(letter);
+        });
+
+        // Centrar
+        const total = cursorX + 12;
+        for (const letter of this.letters) letter.x -= total / 2;
+
+        // Caen una por una con rebote
+        this.letters.forEach((letter, i) => {
+            letter.y = -220;
+            letter.setAngle(Phaser.Math.Between(-30, 30));
+            this.tweens.add({
+                targets: letter,
+                y: 0,
+                angle: 0,
+                duration: 650,
+                delay: 250 + i * 45,
+                ease: 'Bounce.Out',
+                onComplete: () => { letter.landed = true; }
+            });
+        });
+
+        // Todo el título se balancea suave
+        this.tweens.add({
+            targets: this.titleGroup,
+            scale: 1.04,
+            angle: { from: -1.5, to: 1.5 },
+            duration: 1400,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.InOut'
+        });
     }
 
     startGame() {
         this.transitioning = true;
         this.sfx.uiSelect();
 
-        this.tweens.add({ targets: this.hero, x: this.scale.width + 150, duration: 600, ease: 'Quad.In' });
-        // Si el fadeIn inicial sigue corriendo, Phaser ignora el fadeOut y nunca
-        // llega el evento de fin, así que lo cortamos primero
-        this.cameras.main.resetFX();
-        this.cameras.main.fadeOut(500, 0, 0, 0);
-        this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('GameScene'));
+        // En celular, pantalla completa (tiene que pedirse justo después de un toque)
+        if (this.registry.get('touchMode') && !this.scale.isFullscreen) {
+            try { this.scale.startFullscreen(); } catch { /* algunos navegadores no dejan */ }
+        }
+
+        this.background.sun.setMood('cheer');
+        if (SKINS[PLAYER.skin].anims.happy) this.hero.play(`${PLAYER.skin}_happy`);
+
+        // El perrito da un saltito y el iris se cierra sobre él
+        this.tweens.add({ targets: this.hero, scale: 1.5, duration: 160, yoyo: true, ease: 'Quad.Out' });
+        irisOut(this, this.hero.x, this.hero.y, () => this.scene.start('GameScene'));
     }
 
-    toggleSound() {
+    toggleMute() {
         const muted = this.sfx.toggleMute();
         this.music.setMuted(muted);
-        this.buttons[2].text.setText(this.buttons[2].label());
         this.sfx.uiSelect(); // si quedó en silencio, no suena (y está bien)
+    }
+
+    showOptions() {
+        this.sfx.uiSelect();
+        this.scene.launch('OptionsScene', { from: 'MenuScene' });
     }
 
     // Panel "how to play"
@@ -223,15 +368,20 @@ export default class MenuScene extends Phaser.Scene {
             fontFamily: FONT, fontSize: '32px', color: COLOR_SELECTED, stroke: '#000000', strokeThickness: 6
         }).setOrigin(0.5);
         this.panel.add([bg, title]);
+        this.howToRows = [];
 
         TEXT.controls.forEach(([action, keys], i) => {
             const y = -95 + i * 42;
-            this.panel.add(this.add.text(-200, y, action, {
+            const left = this.add.text(-200, y, action, {
                 fontFamily: FONT, fontSize: '22px', color: '#ffffff'
-            }).setOrigin(0, 0.5));
-            this.panel.add(this.add.text(200, y, keys, {
+            }).setOrigin(0, 0.5);
+            const right = this.add.text(200, y, keys, {
                 fontFamily: 'Arial, sans-serif', fontSize: '22px', color: '#b3e5fc'
-            }).setOrigin(1, 0.5));
+            }).setOrigin(1, 0.5);
+            left.baseX = -200;
+            right.baseX = 200;
+            this.howToRows.push(left, right);
+            this.panel.add([left, right]);
         });
 
         this.panel.add(this.add.text(0, 125, TEXT.tip, {
@@ -248,6 +398,13 @@ export default class MenuScene extends Phaser.Scene {
         this.sfx.uiSelect();
         this.panel.setVisible(true).setScale(0.85).setAlpha(0);
         this.tweens.add({ targets: this.panel, scale: 1, alpha: 1, duration: 180, ease: 'Back.Out' });
+
+        // Las filas de controles aparecen una tras otra
+        this.howToRows.forEach((text, i) => {
+            const x = text.baseX;
+            text.setAlpha(0).setX(x + (text.originX === 0 ? -30 : 30));
+            this.tweens.add({ targets: text, x, alpha: 1, duration: 220, delay: 120 + Math.floor(i / 2) * 70, ease: 'Quad.Out' });
+        });
     }
 
     hideHowTo() {

@@ -8,9 +8,22 @@
     <title>Dog Air Rescue</title>
     <style>
       html, body { margin: 0; padding: 0; height: 100%; background: #111; overflow: hidden; }
+      body { touch-action: none; -webkit-user-select: none; user-select: none; }
+      /* En celular vertical: pedir que lo giren */
+      #rotate { display: none; }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #rotate {
+          display: flex; position: fixed; inset: 0; z-index: 10; background: #1b1410; color: #ffd54f;
+          flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+          font: 900 22px 'Arial Black', Arial, sans-serif; text-align: center;
+        }
+        #rotate span { font-size: 64px; animation: turn 1.6s ease-in-out infinite; }
+      }
+      @keyframes turn { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
     </style>
   </head>
   <body>
+    <div id="rotate"><span>📱</span>Rotate your phone to play</div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

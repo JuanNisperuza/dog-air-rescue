@@ -1,12 +1,29 @@
 import Phaser from 'phaser';
 import { JUICE } from '../config/constants.js';
+import { settings } from './settings.js';
+import Corpse from '../entities/Corpse.js';
 
-// Efectos de impacto: partículas, popups de puntaje, destello del arma, hit-stop
-// y temblor de cámara. GameScene avisa qué pasó y aquí se decide cómo se ve.
+// Efectos de impacto: partículas, popups de puntaje, destello del arma, hit-stop,
+// temblor de cámara, humo y muertes de enemigos. GameScene avisa qué pasó y aquí
+// se decide cómo se ve y cómo suena.
 const POPUP_POOL = 12;
 const POPUP_LIFE = 650;     // ms
 const POPUP_RISE = 45;      // px que sube
 const MUZZLE_TIME = 45;     // ms
+const CORPSE_POOL = 16;
+const HIT_POOL = 10;
+const PUFFS = ['fx_puff_0001', 'fx_puff_0002', 'fx_puff_0003'];
+const EMOTE_POOL = 6;
+const EMOTE_LIFE = 700;
+const COMIC_POOL = 5;
+const COMIC_WORDS = {
+    pop: ['POP!', 'PLOP!'],
+    spin: ['BAM!', 'POW!', 'WHAM!'],
+    chain: ['KABOOM!']
+};
+
+// Color del popup según el multiplicador del combo (x1 ... x5)
+const POPUP_COLORS = ['#fff176', '#ffd54f', '#ffab40', '#ff7043', '#ff4081'];
 
 export default class Effects {
     constructor(scene, sfx) {
@@ -14,10 +31,36 @@ export default class Effects {
         this.sfx = sfx;
         this.resumeAt = 0;
 
-        // Partículas
+        // Humo (motor del jugador y enemigos que caen)
+        this.smoke = scene.add.particles(0, 0, 'fx', {
+            frame: PUFFS,
+            speedX: { min: -160, max: -80 },
+            speedY: { min: -25, max: 15 },
+            lifespan: { min: 450, max: 700 },
+            scale: { start: 0.25, end: 0.6 },
+            rotate: { min: -40, max: 40 },
+            alpha: { start: 0.75, end: 0 },
+            tint: [0xe0e0e0, 0xbdbdbd, 0x9e9e9e],
+            emitting: false
+        });
+
+        // Chispa animada en cada impacto de bala
+        this.hits = [];
+        for (let i = 0; i < HIT_POOL; i++) {
+            const spark = scene.add.sprite(0, 0, 'fx', 'fx_spark_0001').setDepth(11).setVisible(false);
+            spark.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => spark.setVisible(false));
+            this.hits.push(spark);
+        }
+        this.nextHit = 0;
+
+        // Restos de enemigos que caen o explotan por partes
+        this.corpses = scene.add.group({ classType: Corpse, maxSize: CORPSE_POOL, runChildUpdate: true });
+        this.corpses.createMultiple({ key: 'particle', quantity: CORPSE_POOL, active: false, visible: false });
+
+        // Partículas de impacto
         this.sparks = scene.add.particles(0, 0, 'particle', {
             speed: { min: 90, max: 240 },
-            angle: { min: 120, max: 240 },   // hacia atrás (hacia la derecha no, de ahí vienen las balas)
+            angle: { min: 120, max: 240 },   // hacia atrás: de la derecha vienen las balas
             lifespan: 220,
             scale: { start: 0.9, end: 0 },
             tint: [0xffffff, 0xfff59d, 0xffe082],
@@ -35,6 +78,52 @@ export default class Effects {
             emitting: false
         }).setDepth(11);
 
+        // Pedazos de globo
+        this.confetti = scene.add.particles(0, 0, 'particle', {
+            speed: { min: 140, max: 320 },
+            lifespan: { min: 500, max: 900 },
+            scaleX: { start: 1.2, end: 0.2 },
+            scaleY: { start: 0.5, end: 0.1 },
+            gravityY: 500,
+            rotate: { min: 0, max: 360 },
+            tint: [0xff9a5c, 0xffe0b2, 0xff7043, 0xfff3e0],
+            emitting: false
+        }).setDepth(11);
+
+        // Líneas de velocidad (cruzan la pantalla al acelerar)
+        const { width, height } = scene.scale;
+        this.speedLines = scene.add.particles(0, 0, 'speedline', {
+            x: width + 30,
+            y: { min: 20, max: height - 20 },
+            speedX: { min: -1500, max: -1000 },
+            lifespan: 700,
+            scaleX: { min: 0.6, max: 1.8 },
+            alpha: { start: 0.45, end: 0 },
+            frequency: 30,
+            emitting: false
+        });
+        this.speedLinesOn = false;
+
+        // Avisos "!" sobre los enemigos
+        this.emotes = [];
+        for (let i = 0; i < EMOTE_POOL; i++) {
+            const text = scene.add.text(0, 0, '', {
+                fontFamily: 'Arial Black, Arial, sans-serif', fontSize: '30px', color: '#ffeb3b', stroke: '#2b1d14', strokeThickness: 6
+            }).setOrigin(0.5, 1).setDepth(13).setVisible(false);
+            this.emotes.push(text);
+        }
+        this.nextEmote = 0;
+
+        // Onomatopeyas de cómic ("BAM!", "POW!")
+        this.comics = [];
+        for (let i = 0; i < COMIC_POOL; i++) {
+            const text = scene.add.text(0, 0, '', {
+                fontFamily: 'Arial Black, Arial, sans-serif', fontSize: '34px', color: '#ffeb3b', stroke: '#b71c1c', strokeThickness: 8
+            }).setOrigin(0.5).setDepth(12).setVisible(false);
+            this.comics.push(text);
+        }
+        this.nextComic = 0;
+
         // Destello del arma
         this.muzzle = scene.add.image(0, 0, 'particle')
             .setTint(0xfff59d)
@@ -49,15 +138,35 @@ export default class Effects {
             const text = scene.add.text(0, 0, '', {
                 fontFamily: 'Arial Black, Arial, sans-serif',
                 fontSize: '20px',
-                color: '#fff176',
+                color: POPUP_COLORS[0],
                 stroke: '#000000',
                 strokeThickness: 5
             }).setOrigin(0.5).setDepth(12).setVisible(false);
             text.life = 0;
             text.startY = 0;
+            text.baseScale = 1;
             this.popups.push(text);
         }
         this.nextPopup = 0;
+    }
+
+    // Humo continuo saliendo de la cola del avión del jugador
+    attachEngineSmoke(player, offsetX, offsetY) {
+        this.engine = this.scene.add.particles(0, 0, 'fx', {
+            frame: PUFFS,
+            speedX: { min: -170, max: -100 },
+            speedY: { min: -18, max: 18 },
+            lifespan: { min: 380, max: 560 },
+            scale: { start: 0.12, end: 0.38 },
+            rotate: { min: -60, max: 60 },
+            alpha: { start: 0.85, end: 0 },
+            tint: [0xb0b0b0, 0x9a9a9a, 0x808080],
+            frequency: 45
+        });
+        this.engine.startFollow(player, offsetX, offsetY);
+        // Debajo del jugador en la lista de dibujo
+        this.scene.children.moveBelow(this.engine, player);
+        return this.engine;
     }
 
     update(now, delta) {
@@ -68,6 +177,18 @@ export default class Effects {
 
         if (this.muzzle.visible && now >= this.muzzleUntil) {
             this.muzzle.setVisible(false);
+        }
+
+        for (const emote of this.emotes) {
+            if (!emote.visible) continue;
+            emote.life += delta;
+            const target = emote.target;
+            if (emote.life >= EMOTE_LIFE || !target.active) {
+                emote.setVisible(false);
+                continue;
+            }
+            const top = target.y - target.displayHeight * target.originY;
+            emote.setPosition(target.x, top - 4 + Math.sin(emote.life * 0.03) * 3);
         }
 
         // Popups animados a mano (sin tweens)
@@ -81,7 +202,8 @@ export default class Effects {
             }
             text.y = text.startY - POPUP_RISE * t;
             text.setAlpha(1 - t * t);
-            text.setScale(t < 0.15 ? 0.6 + (t / 0.15) * 0.6 : 1.2 - (t - 0.15) * 0.25); // "pop" al aparecer
+            const pop = t < 0.15 ? 0.6 + (t / 0.15) * 0.6 : 1.2 - (t - 0.15) * 0.25;
+            text.setScale(pop * text.baseScale);
         }
     }
 
@@ -91,52 +213,211 @@ export default class Effects {
     hitStop(ms) {
         if (!JUICE.hitStop || ms <= 0 || this.scene.isGameOver) return;
         this.scene.physics.world.pause();
-        this.resumeAt = Math.max(this.resumeAt, this.scene.time.now + ms);
+        this.resumeAt = Math.max(this.resumeAt, this.scene.now + ms);
     }
 
     shake(duration, intensity) {
-        if (!JUICE.screenShake) return;
+        if (!JUICE.screenShake || !settings.shake) return;
         this.scene.cameras.main.shake(duration, intensity);
     }
 
-    popup(x, y, value) {
+    popup(x, y, value, multiplier = 1) {
+        this.label(x, y, '+' + value, POPUP_COLORS[Math.min(multiplier, POPUP_COLORS.length) - 1], 1 + (multiplier - 1) * 0.15);
+    }
+
+    // Texto flotante cualquiera ("RESCUED!", "SPREAD!"...)
+    label(x, y, message, color = '#ffffff', scale = 1) {
         const text = this.popups[this.nextPopup];
         this.nextPopup = (this.nextPopup + 1) % POPUP_POOL; // round-robin: el más viejo se reutiliza
-        text.setText('+' + value);
-        text.setPosition(x, y).setAlpha(1).setScale(0.6).setVisible(true);
+        text.setText(message);
+        text.setColor(color);
+        text.baseScale = scale;
+        text.setPosition(x, y).setAlpha(1).setScale(0.6 * text.baseScale).setVisible(true);
         text.startY = y;
         text.life = 0;
+    }
+
+    // "!" que salta sobre un enemigo y lo sigue un momento
+    emote(target, text, color = '#ffeb3b', scale = 1) {
+        const emote = this.emotes[this.nextEmote];
+        this.nextEmote = (this.nextEmote + 1) % EMOTE_POOL;
+        emote.setText(text).setColor(color).setVisible(true).setAlpha(1);
+        emote.target = target;
+        emote.life = 0;
+        this.scene.tweens.killTweensOf(emote);
+        emote.setScale(0).setAngle(-15);
+        this.scene.tweens.add({ targets: emote, scale, angle: 0, duration: 250, ease: 'Back.Out' });
+    }
+
+    // Palabra de cómic que salta girada y se desvanece
+    comic(x, y, word) {
+        const text = this.comics[this.nextComic];
+        this.nextComic = (this.nextComic + 1) % COMIC_POOL;
+        this.scene.tweens.killTweensOf(text);
+        const big = word.length > 5;
+        text.setText(word).setPosition(x + Phaser.Math.Between(-20, 20), y - 50).setVisible(true).setAlpha(1)
+            .setAngle(Phaser.Math.Between(-18, 18)).setScale(0)
+            .setFontSize(big ? 52 : 34);
+        this.scene.tweens.chain({
+            targets: text,
+            tweens: [
+                { scale: 1.3, duration: 120, ease: 'Back.Out' },
+                { scale: 1, duration: 120 },
+                { alpha: 0, y: text.y - 30, scale: 0.8, duration: 300, delay: 250 }
+            ],
+            onComplete: () => text.setVisible(false)
+        });
+    }
+
+    setSpeedLines(on) {
+        if (on === this.speedLinesOn) return;
+        this.speedLinesOn = on;
+        if (on) this.speedLines.start();
+        else this.speedLines.stop();
+    }
+
+    // Separa los colores de la imagen por un instante (solo con el filtro de película)
+    aberration(amount) {
+        const found = this.scene.cameras.main.getPostPipeline('OldFilm');
+        const pipeline = Array.isArray(found) ? found[0] : found;
+        if (!pipeline) return;
+        this.scene.tweens.killTweensOf(pipeline);
+        pipeline.aberration = amount;
+        this.scene.tweens.add({ targets: pipeline, aberration: 0, duration: 450, ease: 'Quad.Out' });
+    }
+
+    smokePuff(x, y) {
+        this.smoke.emitParticleAt(x, y, 1);
+    }
+
+    smallBoom(x, y) {
+        this.scene.explode(x, y, 1.3);
+        this.debris.explode(8, x, y);
+        this.sfx.explosion(false);
+        this.shake(90, 0.005);
+    }
+
+    bigBoom(x, y) {
+        this.scene.explode(x, y, 3);
+        this.debris.explode(40, x, y);
+        this.sfx.explosion(true);
+        this.shake(320, 0.016);
+        this.hitStop(90);
+        this.scene.cameras.main.flash(140, 255, 240, 200);
+        this.aberration(0.7);
+        this.comic(x, y, Phaser.Utils.Array.GetRandom(COMIC_WORDS.chain));
     }
 
     // Eventos del juego
 
     playerShoot(x, y) {
         this.muzzle.setPosition(x, y).setScale(Phaser.Math.FloatBetween(2.2, 3)).setVisible(true);
-        this.muzzleUntil = this.scene.time.now + MUZZLE_TIME;
+        this.muzzleUntil = this.scene.now + MUZZLE_TIME;
         this.sfx.shoot();
     }
 
     enemyHit(x, y) {
-        this.sparks.explode(4, x, y);
+        this.sparks.explode(3, x, y);
+        const spark = this.hits[this.nextHit];
+        this.nextHit = (this.nextHit + 1) % HIT_POOL;
+        spark.setPosition(x + Phaser.Math.Between(-6, 6), y + Phaser.Math.Between(-8, 8))
+            .setScale(Phaser.Math.FloatBetween(0.45, 0.65))
+            .setAngle(Phaser.Math.Between(0, 360))
+            .setVisible(true)
+            .play('fx_spark');
         this.sfx.hit();
     }
 
-    enemyKilled(enemy) {
-        const size = enemy.stat('explosionSize') ?? 1;
-        const big = size > 1;
+    // points = 0 cuando muere por chocar con el jugador
+    enemyKilled(enemy, points = 0, multiplier = 1) {
+        const { x, y } = enemy;
+        const style = enemy.stat('death') ?? 'spin';
 
-        this.debris.explode(big ? 36 : 12, enemy.x, enemy.y);
-        this.popup(enemy.x, enemy.y - 20, enemy.stat('points'));
-        this.sfx.explosion(big);
+        if (points > 0) this.popup(x, y - 20, points, multiplier);
 
-        if (big) {
-            this.shake(280, 0.014);
-            this.hitStop(110);
-            this.scene.cameras.main.flash(120, 255, 240, 200);
-        } else {
-            this.shake(70, 0.003);
-            this.hitStop(22);
+        const corpse = this.corpses.get(x, y);
+        if (corpse) corpse.start(enemy, style, this);
+
+        if (style === 'chain') {
+            // La explosión grande la hace el cuerpo al final de la cadena
+            this.scene.explode(x, y, 1.2);
+            this.sfx.explosion(false);
+            this.shake(120, 0.006);
+            this.hitStop(60);
+            return;
         }
+
+        this.scene.explode(x, y, 1);
+        // A veces sale una palabra de cómic (siempre para los que valen más)
+        if (points > 0 && (Math.random() < 0.35 || enemy.stat('points') >= 25)) {
+            this.comic(x, y, Phaser.Utils.Array.GetRandom(COMIC_WORDS[style] ?? COMIC_WORDS.spin));
+        }
+        if (style === 'pop') {
+            this.confetti.explode(16, x, y - 25);
+            this.sfx.pop();
+        } else {
+            this.debris.explode(12, x, y);
+            this.sfx.explosion(false);
+        }
+        this.shake(70, 0.003);
+        this.hitStop(22);
+    }
+
+    // Ataque especial: dos anillos que se expanden desde el jugador
+    superBlast(x, y) {
+        for (let i = 0; i < 2; i++) {
+            const ring = this.scene.add.image(x, y, 'ring')
+                .setTint(i ? 0xffffff : 0xffd54f).setBlendMode('ADD').setDepth(12).setScale(0.2);
+            this.scene.tweens.add({
+                targets: ring,
+                scale: 16,
+                alpha: 0,
+                duration: 650,
+                delay: i * 90,
+                ease: 'Cubic.Out',
+                onComplete: () => ring.destroy()
+            });
+        }
+        this.sparks.explode(30, x, y);
+        this.sfx.bark();
+        this.shake(400, 0.02);
+        this.scene.cameras.main.flash(220, 255, 245, 200);
+        this.aberration(1);
+    }
+
+    superReady() {
+        this.sfx.superReady();
+    }
+
+    // La bala enemiga se desintegra (súper o cambio de fase del jefe)
+    bulletCleared(x, y) {
+        this.sparks.emitParticleAt(x, y, 2);
+    }
+
+    rescued(x, y, healed) {
+        this.confetti.explode(20, x, y);
+        this.label(x, y - 30, healed ? 'RESCUED! +1 HP' : 'RESCUED!', '#80d8ff', 1.1);
+        this.sfx.rescue();
+    }
+
+    poweredUp(x, y, kind) {
+        this.sparks.explode(14, x, y);
+        this.label(x, y - 30, kind.toUpperCase() + '!', '#ffd54f', 1.1);
+        this.sfx.powerUp();
+    }
+
+    shieldBroken(x, y) {
+        this.sparks.explode(20, x, y);
+        this.shake(120, 0.006);
+        this.sfx.shieldBreak();
+    }
+
+    bossHit(x, y) {
+        this.enemyHit(x, y);
+    }
+
+    comboUp(level) {
+        this.sfx.comboUp(level);
     }
 
     enemyShoot() {
@@ -151,10 +432,13 @@ export default class Effects {
         this.shake(220, 0.014);
         this.hitStop(80);
         this.scene.cameras.main.flash(160, 255, 60, 60);
+        this.aberration(1);
         this.sfx.playerHurt();
     }
 
     playerDied(x, y) {
+        this.engine?.stop();
+        this.setSpeedLines(false);
         this.debris.explode(45, x, y);
         this.shake(500, 0.022);
         this.scene.cameras.main.flash(300, 255, 255, 255);

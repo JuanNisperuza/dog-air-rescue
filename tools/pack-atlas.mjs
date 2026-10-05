@@ -1,6 +1,6 @@
 // Empaqueta los frames sueltos en atlas de Phaser (recorta la transparencia de cada
 // frame y comprime el PNG a 256 colores). Para animaciones nuevas, agregar su prefijo
-// en ATLASES. Uso: npm run atlas
+// en ATLASES. Uso: npm run atlas  (o solo algunos: npm run atlas -- fx boss)
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import texturePacker from 'free-tex-packer-core';
@@ -21,6 +21,16 @@ const ATLASES = [
         name: 'dog_plane',
         sourceDir: 'art/frames/dog',  // generado con npm run slice
         prefixes: ['dog_plane_']
+    },
+    {
+        name: 'fx',
+        sourceDir: 'art/frames/fx',     // explosiones, chispas, humo, balas, perritos, power-ups
+        prefixes: ['fx_', 'pup_', 'pu_']
+    },
+    {
+        name: 'boss',
+        sourceDir: 'art/frames/boss',
+        prefixes: ['boss_']
     },
     {
         name: 'cuphead_plane',
@@ -65,7 +75,9 @@ function pack(images, options) {
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
 
-for (const atlas of ATLASES) {
+// Si se pasan nombres por consola, solo se empaquetan esos
+const only = process.argv.slice(2);
+for (const atlas of ATLASES.filter((a) => only.length === 0 || only.includes(a.name))) {
     const files = readdirSync(atlas.sourceDir)
         .filter((f) => f.toLowerCase().endsWith('.png'))
         .filter((f) => atlas.prefixes.some((p) => f.startsWith(p)))

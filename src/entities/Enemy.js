@@ -57,10 +57,15 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         this.playAnim('fly');
 
+        // Squash & stretch: respira todo el tiempo y se aplasta con cada golpe
+        this.breathPhase = Math.random() * Math.PI * 2;
+        this.punch = 0;
+        this.setScale(1);
+
         this.hp = this.stat('hp') * difficulty.hp;
         this.speed = this.stat('speed') * difficulty.speed;
         this.state = null;
-        this.spawnTime = this.scene.time.now;
+        this.spawnTime = this.scene.now;
 
         this.behavior.spawn(this, this.spawnTime);
     }
@@ -96,7 +101,7 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     update(time, delta) {
-        const now = this.scene.time.now;
+        const now = this.scene.now;
         if (!this.scene.isGameOver) {
             this.behavior.update(this, now, delta);
         }
@@ -104,6 +109,10 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (this.flashing && now >= this.flashUntil) {
             this.clearFlash();
         }
+
+        this.punch = Math.max(0, this.punch - delta / 140);
+        const breathe = Math.sin(now * 0.009 + this.breathPhase) * 0.035;
+        this.setScale(1 + breathe + this.punch * 0.22, 1 - breathe - this.punch * 0.16);
 
         // Por la derecha no, porque ahí es donde aparecen
         const { height } = this.scene.scale;
@@ -115,10 +124,11 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Devuelve true si murió
     takeDamage(amount) {
         this.hp -= amount;
+        this.punch = 1;
 
         this.setTintFill(0xffffff);
         this.flashing = true;
-        this.flashUntil = this.scene.time.now + FLASH_TIME;
+        this.flashUntil = this.scene.now + FLASH_TIME;
 
         return this.hp <= 0;
     }

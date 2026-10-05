@@ -1,0 +1,355 @@
+{
+	"textures": [
+		{
+			"image": "boss.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 1035,
+				"h": 1189
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "boss_defeated_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 23,
+						"y": 59,
+						"w": 200,
+						"h": 330
+					},
+					"frame": {
+						"x": 2,
+						"y": 2,
+						"w": 200,
+						"h": 330
+					}
+				},
+				{
+					"filename": "boss_angry_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 37,
+						"y": 116,
+						"w": 208,
+						"h": 321
+					},
+					"frame": {
+						"x": 206,
+						"y": 2,
+						"w": 208,
+						"h": 321
+					}
+				},
+				{
+					"filename": "boss_defeated_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 28,
+						"y": 72,
+						"w": 202,
+						"h": 311
+					},
+					"frame": {
+						"x": 2,
+						"y": 336,
+						"w": 202,
+						"h": 311
+					}
+				},
+				{
+					"filename": "boss_attack_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 21,
+						"y": 84,
+						"w": 200,
+						"h": 304
+					},
+					"frame": {
+						"x": 208,
+						"y": 327,
+						"w": 200,
+						"h": 304
+					}
+				},
+				{
+					"filename": "boss_defeated_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 17,
+						"y": 80,
+						"w": 198,
+						"h": 304
+					},
+					"frame": {
+						"x": 418,
+						"y": 2,
+						"w": 198,
+						"h": 304
+					}
+				},
+				{
+					"filename": "boss_attack_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 84,
+						"w": 207,
+						"h": 298
+					},
+					"frame": {
+						"x": 620,
+						"y": 2,
+						"w": 207,
+						"h": 298
+					}
+				},
+				{
+					"filename": "boss_angry_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 30,
+						"y": 89,
+						"w": 209,
+						"h": 296
+					},
+					"frame": {
+						"x": 412,
+						"y": 327,
+						"w": 209,
+						"h": 296
+					}
+				},
+				{
+					"filename": "boss_defeated_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 22,
+						"y": 82,
+						"w": 195,
+						"h": 289
+					},
+					"frame": {
+						"x": 625,
+						"y": 304,
+						"w": 195,
+						"h": 289
+					}
+				},
+				{
+					"filename": "boss_attack_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 96,
+						"w": 207,
+						"h": 273
+					},
+					"frame": {
+						"x": 2,
+						"y": 651,
+						"w": 207,
+						"h": 273
+					}
+				},
+				{
+					"filename": "boss_angry_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 28,
+						"y": 113,
+						"w": 208,
+						"h": 272
+					},
+					"frame": {
+						"x": 213,
+						"y": 635,
+						"w": 208,
+						"h": 272
+					}
+				},
+				{
+					"filename": "boss_attack_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 21,
+						"y": 99,
+						"w": 196,
+						"h": 272
+					},
+					"frame": {
+						"x": 625,
+						"y": 597,
+						"w": 196,
+						"h": 272
+					}
+				},
+				{
+					"filename": "boss_idle_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 28,
+						"y": 123,
+						"w": 202,
+						"h": 263
+					},
+					"frame": {
+						"x": 831,
+						"y": 2,
+						"w": 202,
+						"h": 263
+					}
+				},
+				{
+					"filename": "boss_idle_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 28,
+						"y": 123,
+						"w": 205,
+						"h": 263
+					},
+					"frame": {
+						"x": 825,
+						"y": 304,
+						"w": 205,
+						"h": 263
+					}
+				},
+				{
+					"filename": "boss_idle_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 29,
+						"y": 123,
+						"w": 199,
+						"h": 263
+					},
+					"frame": {
+						"x": 825,
+						"y": 571,
+						"w": 199,
+						"h": 263
+					}
+				},
+				{
+					"filename": "boss_idle_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 28,
+						"y": 126,
+						"w": 204,
+						"h": 259
+					},
+					"frame": {
+						"x": 2,
+						"y": 928,
+						"w": 204,
+						"h": 259
+					}
+				},
+				{
+					"filename": "boss_angry_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 245,
+						"h": 501
+					},
+					"spriteSourceSize": {
+						"x": 28,
+						"y": 129,
+						"w": 208,
+						"h": 254
+					},
+					"frame": {
+						"x": 825,
+						"y": 838,
+						"w": 208,
+						"h": 254
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "http://github.com/odrick/free-tex-packer-core",
+		"version": "0.3.9"
+	}
+}
