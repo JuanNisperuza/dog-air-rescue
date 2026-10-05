@@ -1,0 +1,439 @@
+{
+	"textures": [
+		{
+			"image": "dog_plane.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 535,
+				"h": 532
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "dog_plane_idle_down_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 1,
+						"w": 130,
+						"h": 106
+					},
+					"frame": {
+						"x": 2,
+						"y": 2,
+						"w": 130,
+						"h": 106
+					}
+				},
+				{
+					"filename": "dog_plane_idle_down_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 1,
+						"w": 130,
+						"h": 106
+					},
+					"frame": {
+						"x": 2,
+						"y": 112,
+						"w": 130,
+						"h": 106
+					}
+				},
+				{
+					"filename": "dog_plane_idle_down_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 1,
+						"w": 130,
+						"h": 106
+					},
+					"frame": {
+						"x": 136,
+						"y": 2,
+						"w": 130,
+						"h": 106
+					}
+				},
+				{
+					"filename": "dog_plane_idle_down_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 1,
+						"w": 130,
+						"h": 106
+					},
+					"frame": {
+						"x": 136,
+						"y": 112,
+						"w": 130,
+						"h": 106
+					}
+				},
+				{
+					"filename": "dog_plane_idle_down_0005",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 1,
+						"w": 130,
+						"h": 106
+					},
+					"frame": {
+						"x": 2,
+						"y": 222,
+						"w": 130,
+						"h": 106
+					}
+				},
+				{
+					"filename": "dog_plane_idle_straight_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 4,
+						"w": 130,
+						"h": 100
+					},
+					"frame": {
+						"x": 136,
+						"y": 222,
+						"w": 130,
+						"h": 100
+					}
+				},
+				{
+					"filename": "dog_plane_idle_straight_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 4,
+						"w": 130,
+						"h": 100
+					},
+					"frame": {
+						"x": 270,
+						"y": 2,
+						"w": 130,
+						"h": 100
+					}
+				},
+				{
+					"filename": "dog_plane_idle_straight_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 4,
+						"w": 130,
+						"h": 100
+					},
+					"frame": {
+						"x": 270,
+						"y": 106,
+						"w": 130,
+						"h": 100
+					}
+				},
+				{
+					"filename": "dog_plane_idle_straight_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 4,
+						"w": 130,
+						"h": 100
+					},
+					"frame": {
+						"x": 270,
+						"y": 210,
+						"w": 130,
+						"h": 100
+					}
+				},
+				{
+					"filename": "dog_plane_idle_straight_0005",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 4,
+						"w": 130,
+						"h": 100
+					},
+					"frame": {
+						"x": 270,
+						"y": 314,
+						"w": 130,
+						"h": 100
+					}
+				},
+				{
+					"filename": "dog_plane_idle_straight_0006",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 4,
+						"w": 130,
+						"h": 100
+					},
+					"frame": {
+						"x": 136,
+						"y": 326,
+						"w": 130,
+						"h": 100
+					}
+				},
+				{
+					"filename": "dog_plane_idle_down_0006",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 1,
+						"w": 129,
+						"h": 106
+					},
+					"frame": {
+						"x": 404,
+						"y": 2,
+						"w": 129,
+						"h": 106
+					}
+				},
+				{
+					"filename": "dog_plane_idle_up_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 126,
+						"h": 96
+					},
+					"frame": {
+						"x": 404,
+						"y": 112,
+						"w": 126,
+						"h": 96
+					}
+				},
+				{
+					"filename": "dog_plane_idle_up_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 5,
+						"w": 126,
+						"h": 97
+					},
+					"frame": {
+						"x": 2,
+						"y": 332,
+						"w": 126,
+						"h": 97
+					}
+				},
+				{
+					"filename": "dog_plane_idle_up_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 6,
+						"w": 126,
+						"h": 96
+					},
+					"frame": {
+						"x": 404,
+						"y": 212,
+						"w": 126,
+						"h": 96
+					}
+				},
+				{
+					"filename": "dog_plane_idle_up_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 5,
+						"w": 126,
+						"h": 97
+					},
+					"frame": {
+						"x": 404,
+						"y": 312,
+						"w": 126,
+						"h": 97
+					}
+				},
+				{
+					"filename": "dog_plane_idle_up_0005",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 5,
+						"w": 126,
+						"h": 97
+					},
+					"frame": {
+						"x": 2,
+						"y": 433,
+						"w": 126,
+						"h": 97
+					}
+				},
+				{
+					"filename": "dog_plane_idle_up_0006",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 3,
+						"y": 5,
+						"w": 126,
+						"h": 97
+					},
+					"frame": {
+						"x": 404,
+						"y": 413,
+						"w": 126,
+						"h": 97
+					}
+				},
+				{
+					"filename": "dog_plane_ghost_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 38,
+						"y": 21,
+						"w": 56,
+						"h": 65
+					},
+					"frame": {
+						"x": 132,
+						"y": 430,
+						"w": 56,
+						"h": 65
+					}
+				},
+				{
+					"filename": "dog_plane_ghost_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 132,
+						"h": 108
+					},
+					"spriteSourceSize": {
+						"x": 38,
+						"y": 22,
+						"w": 56,
+						"h": 64
+					},
+					"frame": {
+						"x": 192,
+						"y": 430,
+						"w": 56,
+						"h": 64
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "http://github.com/odrick/free-tex-packer-core",
+		"version": "0.3.9"
+	}
+}

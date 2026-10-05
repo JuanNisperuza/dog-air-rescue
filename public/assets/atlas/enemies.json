@@ -1,0 +1,607 @@
+{
+	"textures": [
+		{
+			"image": "enemies.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 612,
+				"h": 549
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "cat_heavy_shoot_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 0,
+						"w": 171,
+						"h": 144
+					},
+					"frame": {
+						"x": 2,
+						"y": 2,
+						"w": 171,
+						"h": 144
+					}
+				},
+				{
+					"filename": "cat_heavy_shoot_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 0,
+						"w": 162,
+						"h": 140
+					},
+					"frame": {
+						"x": 2,
+						"y": 150,
+						"w": 162,
+						"h": 140
+					}
+				},
+				{
+					"filename": "cat_heavy_fly_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 38,
+						"y": 0,
+						"w": 134,
+						"h": 140
+					},
+					"frame": {
+						"x": 168,
+						"y": 150,
+						"w": 134,
+						"h": 140
+					}
+				},
+				{
+					"filename": "cat_heavy_fly_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 38,
+						"y": 0,
+						"w": 134,
+						"h": 140
+					},
+					"frame": {
+						"x": 177,
+						"y": 2,
+						"w": 134,
+						"h": 140
+					}
+				},
+				{
+					"filename": "cat_heavy_shoot_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 33,
+						"y": 0,
+						"w": 139,
+						"h": 140
+					},
+					"frame": {
+						"x": 2,
+						"y": 294,
+						"w": 139,
+						"h": 140
+					}
+				},
+				{
+					"filename": "cat_heavy_shoot_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 42,
+						"y": 0,
+						"w": 130,
+						"h": 140
+					},
+					"frame": {
+						"x": 145,
+						"y": 294,
+						"w": 130,
+						"h": 140
+					}
+				},
+				{
+					"filename": "cat_heavy_fly_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 38,
+						"y": 0,
+						"w": 134,
+						"h": 139
+					},
+					"frame": {
+						"x": 315,
+						"y": 2,
+						"w": 134,
+						"h": 139
+					}
+				},
+				{
+					"filename": "cat_heavy_fly_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 172,
+						"h": 144
+					},
+					"spriteSourceSize": {
+						"x": 38,
+						"y": 1,
+						"w": 134,
+						"h": 138
+					},
+					"frame": {
+						"x": 315,
+						"y": 145,
+						"w": 134,
+						"h": 138
+					}
+				},
+				{
+					"filename": "cat_gunner_shoot_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 1,
+						"y": 1,
+						"w": 113,
+						"h": 69
+					},
+					"frame": {
+						"x": 306,
+						"y": 287,
+						"w": 113,
+						"h": 69
+					}
+				},
+				{
+					"filename": "cat_flyer_fly_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 58,
+						"h": 109
+					},
+					"frame": {
+						"x": 2,
+						"y": 438,
+						"w": 58,
+						"h": 109
+					}
+				},
+				{
+					"filename": "cat_flyer_fly_0003",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 60,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 60,
+						"h": 109
+					},
+					"frame": {
+						"x": 64,
+						"y": 438,
+						"w": 60,
+						"h": 109
+					}
+				},
+				{
+					"filename": "cat_flyer_fly_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 1,
+						"w": 60,
+						"h": 108
+					},
+					"frame": {
+						"x": 128,
+						"y": 438,
+						"w": 60,
+						"h": 108
+					}
+				},
+				{
+					"filename": "cat_flyer_fly_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 60,
+						"h": 109
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 4,
+						"w": 58,
+						"h": 103
+					},
+					"frame": {
+						"x": 192,
+						"y": 438,
+						"w": 58,
+						"h": 103
+					}
+				},
+				{
+					"filename": "cat_diver_dash_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 11,
+						"w": 95,
+						"h": 40
+					},
+					"frame": {
+						"x": 254,
+						"y": 438,
+						"w": 95,
+						"h": 40
+					}
+				},
+				{
+					"filename": "cat_gunner_shoot_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 18,
+						"y": 0,
+						"w": 95,
+						"h": 68
+					},
+					"frame": {
+						"x": 353,
+						"y": 360,
+						"w": 95,
+						"h": 68
+					}
+				},
+				{
+					"filename": "cat_gunner_shoot_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 24,
+						"y": 1,
+						"w": 89,
+						"h": 67
+					},
+					"frame": {
+						"x": 353,
+						"y": 432,
+						"w": 89,
+						"h": 67
+					}
+				},
+				{
+					"filename": "cat_diver_dash_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 9,
+						"y": 0,
+						"w": 83,
+						"h": 59
+					},
+					"frame": {
+						"x": 254,
+						"y": 482,
+						"w": 83,
+						"h": 59
+					}
+				},
+				{
+					"filename": "cat_diver_dash_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 10,
+						"w": 80,
+						"h": 41
+					},
+					"frame": {
+						"x": 341,
+						"y": 503,
+						"w": 80,
+						"h": 41
+					}
+				},
+				{
+					"filename": "cat_gunner_fly_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 34,
+						"y": 1,
+						"w": 79,
+						"h": 66
+					},
+					"frame": {
+						"x": 453,
+						"y": 2,
+						"w": 79,
+						"h": 66
+					}
+				},
+				{
+					"filename": "cat_gunner_fly_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 37,
+						"y": 1,
+						"w": 78,
+						"h": 72
+					},
+					"frame": {
+						"x": 453,
+						"y": 72,
+						"w": 78,
+						"h": 72
+					}
+				},
+				{
+					"filename": "cat_diver_fly_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 0,
+						"w": 75,
+						"h": 61
+					},
+					"frame": {
+						"x": 453,
+						"y": 148,
+						"w": 75,
+						"h": 61
+					}
+				},
+				{
+					"filename": "cat_diver_fly_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 1,
+						"w": 75,
+						"h": 60
+					},
+					"frame": {
+						"x": 453,
+						"y": 213,
+						"w": 75,
+						"h": 60
+					}
+				},
+				{
+					"filename": "cat_diver_fly_0004",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 10,
+						"y": 0,
+						"w": 75,
+						"h": 61
+					},
+					"frame": {
+						"x": 453,
+						"y": 277,
+						"w": 75,
+						"h": 61
+					}
+				},
+				{
+					"filename": "cat_gunner_shoot_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 36,
+						"y": 1,
+						"w": 75,
+						"h": 67
+					},
+					"frame": {
+						"x": 452,
+						"y": 342,
+						"w": 75,
+						"h": 67
+					}
+				},
+				{
+					"filename": "cat_diver_fly_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 11,
+						"y": 0,
+						"w": 74,
+						"h": 61
+					},
+					"frame": {
+						"x": 452,
+						"y": 413,
+						"w": 74,
+						"h": 61
+					}
+				},
+				{
+					"filename": "cat_diver_warn_0001",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 95,
+						"h": 61
+					},
+					"spriteSourceSize": {
+						"x": 11,
+						"y": 4,
+						"w": 74,
+						"h": 53
+					},
+					"frame": {
+						"x": 446,
+						"y": 478,
+						"w": 74,
+						"h": 53
+					}
+				},
+				{
+					"filename": "cat_gunner_fly_0002",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 40,
+						"y": 0,
+						"w": 74,
+						"h": 68
+					},
+					"frame": {
+						"x": 536,
+						"y": 2,
+						"w": 74,
+						"h": 68
+					}
+				},
+				{
+					"filename": "cat_gunner_fly_0003",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 115,
+						"h": 73
+					},
+					"spriteSourceSize": {
+						"x": 49,
+						"y": 0,
+						"w": 64,
+						"h": 70
+					},
+					"frame": {
+						"x": 279,
+						"y": 360,
+						"w": 64,
+						"h": 70
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "http://github.com/odrick/free-tex-packer-core",
+		"version": "0.3.9"
+	}
+}
