@@ -37,7 +37,7 @@ A small side-scrolling shoot 'em up made with **Phaser 3** and **Vite**. The cat
 The art was generated as sprite sheets on a flat magenta background and processed with small Node scripts (using [sharp](https://sharp.pixelplumbing.com/)):
 
 ```
-AI sprite sheet ──► npm run slice ──► individual frames ──► npm run atlas ──► compressed texture atlas
+sprite sheet ──► npm run slice ──► individual frames ──► npm run atlas ──► compressed texture atlas
 background art  ──► npm run parallax ──► seamless WebP layers
 ```
 
@@ -70,5 +70,4 @@ Build for production with `npm run build` (output in `dist/`).
 
 - Music: **"Dark Forest" by Holizna** (CC0)
 - Sound effects: synthesized in code
-- Character, enemy and background art: AI-generated, then processed with the tools above
 - Code: Juan Camilo Hernández Nisperuza
