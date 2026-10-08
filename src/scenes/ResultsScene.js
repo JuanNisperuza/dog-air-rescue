@@ -173,8 +173,7 @@ export default class ResultsScene extends Phaser.Scene {
         const bar = this.add.rectangle(-barWidth / 2, y, barWidth, 10, 0x3e2723, 0.3).setOrigin(0, 0.5);
         const fill = this.add.rectangle(-barWidth / 2, y, 1, 10, 0xc62828).setOrigin(0, 0.5);
         const label = this.add.text(-barWidth / 2, y - 22, 'PROGRESS', { fontFamily: FONT, fontSize: '14px', color: INK }).setOrigin(0, 0.5);
-        const flag = this.add.text(barWidth / 2, y - 4, '🐱', { fontSize: '20px' }).setOrigin(0.5, 1);
-        this.card.add([bar, fill, label, flag]);
+        this.card.add([bar, fill, label]);
 
         const value = { p: 0 };
         this.tweens.add({

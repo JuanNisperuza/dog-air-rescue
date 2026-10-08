@@ -110,7 +110,7 @@ export default class MenuScene extends Phaser.Scene {
             this.tweens.add({ targets: button.text, x: menuX, duration: 500, delay: 700 + i * 110, ease: 'Back.Out' });
         });
 
-        this.cursor = this.add.text(0, 0, '▶', {
+        this.cursor = this.add.text(0, 0, '>', {
             fontFamily: FONT, fontSize: '28px', color: COLOR_SELECTED, stroke: '#000000', strokeThickness: 6
         }).setOrigin(0.5).setAlpha(0);
         this.tweens.add({ targets: this.cursor, alpha: 1, duration: 200, delay: 1200 });

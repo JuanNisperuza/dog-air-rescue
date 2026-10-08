@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐶</text></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2244%22 fill=%22%23c62828%22/></svg>" />
     <meta name="description" content="Dog Air Rescue: a small shoot 'em up made with Phaser 3." />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dog Air Rescue</title>
@@ -16,13 +16,13 @@
           flex-direction: column; align-items: center; justify-content: center; gap: 12px;
           font: 900 22px 'Arial Black', Arial, sans-serif; text-align: center;
         }
-        #rotate span { font-size: 64px; animation: turn 1.6s ease-in-out infinite; }
+        #rotate span { width: 36px; height: 60px; border: 5px solid #ffd54f; border-radius: 8px; box-sizing: border-box; animation: turn 1.6s ease-in-out infinite; }
       }
       @keyframes turn { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
     </style>
   </head>
   <body>
-    <div id="rotate"><span>📱</span>Rotate your phone to play</div>
+    <div id="rotate"><span></span>Rotate your phone to play</div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

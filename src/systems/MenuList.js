@@ -47,7 +47,7 @@ export default class MenuList {
             });
         });
 
-        this.cursor = scene.add.text(0, 0, '▶', {
+        this.cursor = scene.add.text(0, 0, '>', {
             fontFamily: FONT, fontSize: `${Math.round(fontSize * 0.8)}px`, color: COLOR_SELECTED, stroke: '#000000', strokeThickness: 6
         }).setOrigin(0.5).setDepth(depth).setAlpha(0);
 

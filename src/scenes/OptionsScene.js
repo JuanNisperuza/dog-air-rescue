@@ -29,7 +29,7 @@ export default class OptionsScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         const volume = (name, key) => ({
-            label: () => `${name}   ◀ ${settings[key]} ▶`,
+            label: () => `${name}   < ${settings[key]} >`,
             left: () => this.setVolume(key, -1),
             right: () => this.setVolume(key, 1)
         });
@@ -50,7 +50,7 @@ export default class OptionsScene extends Phaser.Scene {
             { label: () => 'BACK', action: () => this.close() }
         ], { spacing: 58, fontSize: 26, sfx: this.sfx, delay: 120 });
 
-        this.hint = this.add.text(width / 2, height / 2 + 178, '◀ ▶ to change     Esc to go back', {
+        this.hint = this.add.text(width / 2, height / 2 + 178, 'Left/Right to change     Esc to go back', {
             fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#90a4ae'
         }).setOrigin(0.5);
 
