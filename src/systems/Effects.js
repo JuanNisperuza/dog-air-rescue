@@ -384,6 +384,7 @@ export default class Effects {
 
     bossHit(x, y) {
         this.enemyHit(x, y);
+        this.sfx.bossHit();
     }
 
     comboUp(level) {

@@ -155,6 +155,7 @@ export default class UIScene extends Phaser.Scene {
         });
 
         const danger = this.hp === 1 && playing;
+        if (danger && this.scene.isActive('GameScene')) this.game_.sfx.heartbeat();
         const targetAlpha = danger ? 0.35 + Math.max(0, Math.sin(time * 0.012)) * 0.35 : 0;
         this.vignette.setAlpha(Phaser.Math.Linear(this.vignette.alpha, targetAlpha, 0.15));
 
@@ -412,6 +413,7 @@ export default class UIScene extends Phaser.Scene {
     }
 
     onCinema(parent, on) {
+        this.game_.sfx.whoosh(on);
         this.tweens.killTweensOf([this.barTop, this.barBottom]);
         this.tweens.add({
             targets: [this.barTop, this.barBottom],
@@ -423,6 +425,7 @@ export default class UIScene extends Phaser.Scene {
 
     onTitleCard(parent, card) {
         if (!card) return;
+        this.game_.sfx.titleCard();
         const { width, height } = this.scale;
 
         const ribbon = this.add.rectangle(0, 0, 640, 130, 0xc62828).setStrokeStyle(6, 0x2b1d14);
@@ -451,7 +454,9 @@ export default class UIScene extends Phaser.Scene {
         name.setText('');
         for (let i = 1; i <= full.length; i++) {
             this.time.delayedCall(200 + i * step, () => {
-                if (name.scene) name.setText(full.slice(0, i));
+                if (!name.scene) return;
+                name.setText(full.slice(0, i));
+                this.game_.sfx.typeTick();
             });
         }
     }

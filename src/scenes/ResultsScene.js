@@ -81,6 +81,7 @@ export default class ResultsScene extends Phaser.Scene {
         this.time.delayedCall(after, () => {
             this.tweens.add({ targets: this.bestText, alpha: 1, duration: 200 });
             if (r.isNewBest) {
+                this.sfx.newBest();
                 this.tweens.add({ targets: this.bestText, scale: 1.15, duration: 400, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
             }
             if (r.win) this.showGrade();
@@ -104,7 +105,10 @@ export default class ResultsScene extends Phaser.Scene {
             angle: -1.5,
             duration: 520,
             ease: 'Back.Out',
-            onComplete: () => this.cameras.main.shake(120, 0.004)
+            onComplete: () => {
+                this.cameras.main.shake(120, 0.004);
+                this.sfx.cardLand();
+            }
         });
     }
 

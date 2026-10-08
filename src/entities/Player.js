@@ -137,6 +137,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         if (this.power && this.scene.now >= this.powerUntil) {
             this.power = null;
             this.scene.registry.set('power', null);
+            this.scene.sfx.powerDown();
         }
 
         if (this.shield) this.shieldRing.setPosition(this.x, this.y).setScale(0.85 + Math.sin(time * 0.01) * 0.05);

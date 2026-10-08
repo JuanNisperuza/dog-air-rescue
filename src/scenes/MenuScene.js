@@ -153,6 +153,7 @@ export default class MenuScene extends Phaser.Scene {
             callback: () => {
                 if (this.transitioning) return;
                 this.loop.t = 0;
+                this.sfx.whoosh(true);
                 this.tweens.add({ targets: this.loop, t: 1, duration: 1500, ease: 'Sine.InOut' });
             }
         });
@@ -291,7 +292,10 @@ export default class MenuScene extends Phaser.Scene {
                 duration: 650,
                 delay: 250 + i * 45,
                 ease: 'Bounce.Out',
-                onComplete: () => { letter.landed = true; }
+                onComplete: () => {
+                    letter.landed = true;
+                    this.sfx.letterDrop();
+                }
             });
         });
 

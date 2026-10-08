@@ -13,7 +13,7 @@ export default class PauseScene extends Phaser.Scene {
         const { width, height } = this.scale;
         this.game_ = this.scene.get('GameScene');
         this.sfx = new Sfx(this);
-        this.sfx.uiSelect();
+        this.sfx.open();
         this.done = false;
 
         this.shade = this.add.rectangle(0, 0, width, height, 0x000000, 0.55).setOrigin(0).setInteractive().setAlpha(0);
@@ -39,7 +39,7 @@ export default class PauseScene extends Phaser.Scene {
     resumeGame() {
         if (this.done || !this.list.enabled) return;
         this.done = true;
-        this.sfx.uiMove();
+        this.sfx.close();
         this.tweens.killTweensOf(this.title);
         this.tweens.add({ targets: this.title, y: -80, duration: 220, ease: 'Back.In' });
         this.tweens.add({ targets: this.shade, alpha: 0, duration: 250 });

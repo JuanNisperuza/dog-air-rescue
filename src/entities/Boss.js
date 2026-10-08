@@ -166,6 +166,7 @@ export default class Boss extends Phaser.Physics.Arcade.Sprite {
             onComplete: () => {
                 if (this.state !== 'charge') return;
                 this.applyTint();
+                this.scene.sfx.dive();
                 const targetY = Phaser.Math.Clamp(this.scene.player.y, 240, this.scene.scale.height - 60);
                 this.scene.tweens.add({
                     targets: this,

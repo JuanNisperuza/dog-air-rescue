@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import Sfx from '../systems/Sfx.js';
 
 const CLOSE_TIME = 450;
 const OPEN_TIME = 550;
@@ -10,6 +11,7 @@ export default class TransitionScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.scale;
+        this.sfx = new Sfx(this);
         this.maxRadius = Math.hypot(width, height);
         this.useMask = this.renderer.type === Phaser.WEBGL;
 
@@ -35,6 +37,7 @@ export default class TransitionScene extends Phaser.Scene {
     }
 
     close(x, y, onDone) {
+        this.sfx.whoosh(false);
         this.scene.bringToTop();
         this.tweens.killTweensOf(this.radius);
         this.overlay.setVisible(true);
@@ -53,6 +56,7 @@ export default class TransitionScene extends Phaser.Scene {
     }
 
     open(x, y) {
+        this.sfx.whoosh(true);
         this.scene.bringToTop();
         this.tweens.killTweensOf(this.radius);
         this.overlay.setVisible(true);

@@ -29,7 +29,7 @@ On phones and tablets: drag anywhere on the left side to move (the plane fires o
 - **Combo multiplier** for chaining kills.
 - **Results screen** with stats and a grade (S to C-), Cuphead style.
 - **Game feel**: old-film shader, iris transitions, hit-stop, screen shake, particles, score popups and an animated HUD.
-- **Synthesized sound effects** (Web Audio, no audio files) and streamed background music.
+- **Sound effects** mixing short CC0 samples with sounds synthesized in code (Web Audio), plus streamed background music.
 - **Pause menu and options** (music/SFX volume, film filter, screen shake), saved locally.
 - **Touch controls** with a floating joystick, so it's playable on mobile.
 
@@ -81,5 +81,5 @@ Build for production with `npm run build` (output in `dist/`).
 ## Credits
 
 - Music: **"Dark Forest" by Holizna** (CC0)
-- Sound effects: synthesized in code
+- Sound effects: Kenney (CC0) plus synthesized in code
 - Code: Juan Camilo Hernández Nisperuza

@@ -35,6 +35,7 @@ export default class MenuList {
             });
 
             item.text.setAlpha(0).setX(x + 80).setScale(0.6);
+            scene.time.delayedCall(delay + i * ENTER_STAGGER, () => this.sfx?.swish());
             scene.tweens.add({
                 targets: item.text,
                 x,

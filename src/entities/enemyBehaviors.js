@@ -93,6 +93,7 @@ export const BEHAVIORS = {
                     if (now >= e.dashAt) {
                         e.state = 'dash';
                         e.playAnim('dash');
+                        e.scene.sfx.dive();
                         const angle = e.scene.angleToPlayer(e.x, e.y);
                         e.scene.physics.velocityFromAngle(angle, e.stat('dashSpeed') * e.difficulty.speed, e.body.velocity);
                         e.setAngle(angle - LEFT);

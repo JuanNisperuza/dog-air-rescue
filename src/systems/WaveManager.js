@@ -46,6 +46,7 @@ export default class WaveManager {
                 return;
             }
             this.state = 'break';
+            this.scene.sfx.waveClear();
             this.nextWaveAt = now + WAVES.breakTime;
         }
     }
@@ -65,6 +66,7 @@ export default class WaveManager {
         this.queue.sort((a, b) => a.at - b.at);
 
         this.state = 'running';
+        if (this.waveIndex > 0) this.scene.sfx.waveStart();
 
         if (DEBUG) console.log(`[Wave ${this.waveIndex + 1}/${this.total}] ${wave.name}`);
     }

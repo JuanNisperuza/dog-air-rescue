@@ -130,7 +130,12 @@ export default class GameScene extends Phaser.Scene {
         const onBlur = () => this.pauseGame();
         this.game.events.on('blur', onBlur);
 
-        const onResume = () => this.music.restore(1, 300);
+        this.sfx.engineOn();
+
+        const onResume = () => {
+            this.music.restore(1, 300);
+            this.sfx.engineOn();
+        };
         this.events.on('resume', onResume);
 
         // Scene events survive a restart and must be removed by hand
@@ -138,11 +143,12 @@ export default class GameScene extends Phaser.Scene {
             this.game.events.off('blur', onBlur);
             this.events.off('preupdate', tick);
             this.events.off('resume', onResume);
+            this.sfx.engineOff();
         });
 
         irisIn(this, this.player.x, this.player.y);
-        this.time.delayedCall(450, () => this.banner('READY?', '#ffd54f'));
-        this.time.delayedCall(1500, () => this.banner('FLY!', '#ffffff'));
+        this.time.delayedCall(450, () => { this.banner('READY?', '#ffd54f'); this.sfx.ready(); });
+        this.time.delayedCall(1500, () => { this.banner('FLY!', '#ffffff'); this.sfx.go(); });
     }
 
     update(time, delta) {
@@ -204,6 +210,7 @@ export default class GameScene extends Phaser.Scene {
         const puppy = this.pickups.get(x, y);
         if (!puppy) return;
         puppy.spawn(x, y, 'puppy');
+        this.sfx.squeak();
         this.stats.puppies++;
     }
 
@@ -417,6 +424,7 @@ export default class GameScene extends Phaser.Scene {
         const camera = this.cameras.main;
         const { width, height } = this.scale;
 
+        this.sfx.slowMo();
         this.time.timeScale = scale;
         this.tweens.timeScale = scale;
         this.physics.world.timeScale = 1 / scale;
@@ -438,6 +446,7 @@ export default class GameScene extends Phaser.Scene {
     pauseGame() {
         if (this.isGameOver || this.won || this.leaving || !this.scene.isActive()) return;
         this.music.restore(0.4, 200);
+        this.sfx.engineOff();
         this.scene.pause();
         this.scene.launch('PauseScene');
     }
@@ -462,6 +471,7 @@ export default class GameScene extends Phaser.Scene {
     gameOver() {
         this.isGameOver = true;
         this.combo.break();
+        this.sfx.engineOff();
         this.explode(this.player.x, this.player.y, 2);
         this.fx.playerDied(this.player.x, this.player.y);
         this.music.restore(SOUND.gameOverDuck, 1200);

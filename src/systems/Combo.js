@@ -27,6 +27,7 @@ export default class Combo {
 
     break() {
         if (this.count === 0) return;
+        if (this.count >= 3) this.scene.sfx.comboBreak();
         this.count = 0;
         this.publish();
     }
