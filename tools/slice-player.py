@@ -1,10 +1,4 @@
-"""Corta las hojas del perrito piloto (fondo magenta, cuadrícula 4x4) en frames.
-
-Todos los frames se alinean por el centro del avión amarillo y se escalan para que el
-avión mida lo mismo en todas las hojas; así no "tiembla" al cambiar de animación.
-Requiere Pillow, numpy y scipy. Después: npm run atlas -- dog_plane
-Uso: python tools/slice-player.py
-"""
+# Usage: python tools/slice-player.py (requires Pillow, numpy and scipy)
 import json
 import os
 import numpy as np
@@ -14,26 +8,22 @@ from scipy import ndimage
 SRC = 'art/source'
 OUT = 'art/frames/dog'
 PREFIX = 'dog_plane_'
-PLANE_WIDTH = 128        # ancho del avión en el frame final (px)
+PLANE_WIDTH = 128
 KEY_SOLID, KEY_CLEAR = 70, 150
 
-# animación: (hoja, tamaño de celda, [(fila, columna), ...])
+
 def row(r, cols=range(4)):
     return [(r, c) for c in cols]
 
 ANIMATIONS = {
-    'idle': ('player_fly', 512, row(0) + row(1) + row(2) + row(3)),
-    'happy':         ('player_happy', 512, row(1) + row(2)),
-    'hurt':          ('player_shoot_hurt', 256, row(1)),
-    'super':         ('player_super', 512, row(0) + row(1) + row(2) + row(3, range(3))),
+    'idle':  ('player_fly', 512, row(0) + row(1) + row(2) + row(3)),
+    'happy': ('player_happy', 512, row(1) + row(2)),
+    'hurt':  ('player_shoot_hurt', 256, row(1)),
+    'super': ('player_super', 512, row(0) + row(1) + row(2) + row(3, range(3))),
 }
 
 
 def key_out(rgb):
-    """Quita el magenta tratando cada píxel como mezcla de dibujo + fondo.
-
-    Así lo semitransparente (la hélice borrosa, el humo) queda blanco/gris y no rosado.
-    """
     a = rgb.astype(np.float32)
     bg = np.median(np.concatenate([a[:4, :4].reshape(-1, 3), a[-4:, -4:].reshape(-1, 3)]), axis=0)
     bg_key = max(1.0, min(bg[0], bg[2]) - bg[1])
@@ -47,7 +37,6 @@ def key_out(rgb):
 
 
 def clean(rgba, min_area=40):
-    """Quita ruido suelto y las líneas oscuras de la cuadrícula en los bordes."""
     mask = rgba[..., 3] > 40
     lab, n = ndimage.label(mask)
     if n:
@@ -86,7 +75,6 @@ def load_frames():
 def main():
     frames = load_frames()
 
-    # Una escala por hoja (el avión puede salir de distinto tamaño en cada una)
     scale = {}
     for sheet in {f['sheet'] for f in frames}:
         widths = [f['width'] for f in frames if f['sheet'] == sheet]

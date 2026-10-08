@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import Sfx from '../systems/Sfx.js';
 import MenuList from '../systems/MenuList.js';
 
-// Menú de pausa. GameScene se pausa a sí misma y lanza esta escena encima.
 const FONT = 'Arial Black, Arial, sans-serif';
 
 export default class PauseScene extends Phaser.Scene {
@@ -17,11 +16,9 @@ export default class PauseScene extends Phaser.Scene {
         this.sfx.uiSelect();
         this.done = false;
 
-        // El fondo oscuro también bloquea los toques al juego
         this.shade = this.add.rectangle(0, 0, width, height, 0x000000, 0.55).setOrigin(0).setInteractive().setAlpha(0);
         this.tweens.add({ targets: this.shade, alpha: 1, duration: 200 });
 
-        // El título cae desde arriba, rebota y se queda balanceándose
         this.title = this.add.text(width / 2, -60, 'PAUSED', {
             fontFamily: FONT, fontSize: '64px', color: '#ffd54f', stroke: '#4e342e', strokeThickness: 12
         }).setOrigin(0.5).setAngle(-8);
@@ -39,7 +36,6 @@ export default class PauseScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-P', () => this.resumeGame());
     }
 
-    // Todo sale de la pantalla y después sigue el juego
     resumeGame() {
         if (this.done || !this.list.enabled) return;
         this.done = true;
@@ -53,7 +49,6 @@ export default class PauseScene extends Phaser.Scene {
         });
     }
 
-    // Reintentar o salir: el iris se cierra con el juego todavía en pausa
     exit(fn) {
         if (this.done) return;
         this.done = true;

@@ -1,9 +1,5 @@
-// Controles táctiles: joystick que aparece donde pones el dedo (lado izquierdo),
-// botón de súper y botón de pausa. Solo se muestran después del primer toque en
-// pantalla, así en computador no estorban. En celular el avión dispara solo.
-// El estado se comparte con Player a través del registry ('touchInput').
 const STICK_RADIUS = 60;
-const STICK_ZONE = 0.6;     // fracción izquierda de la pantalla para el joystick
+const STICK_ZONE = 0.6;
 
 export default class TouchControls {
     constructor(scene) {
@@ -12,7 +8,7 @@ export default class TouchControls {
 
         this.state = { enabled: false, active: false, x: 0, y: 0, superPressed: false };
         scene.registry.set('touchInput', this.state);
-        scene.input.addPointer(2); // hasta 3 dedos a la vez
+        scene.input.addPointer(2);
 
         this.base = scene.add.circle(0, 0, STICK_RADIUS, 0x000000, 0.25)
             .setStrokeStyle(4, 0xffffff, 0.6).setDepth(30).setVisible(false);
@@ -39,7 +35,6 @@ export default class TouchControls {
         scene.input.on('pointerup', this.onUp, this);
         scene.input.on('pointerupoutside', this.onUp, this);
 
-        // Si ya se usó táctil antes (en esta visita), se muestran de una
         if (scene.registry.get('touchMode')) this.enable();
     }
 
@@ -52,7 +47,7 @@ export default class TouchControls {
     onDown(pointer, over) {
         if (!pointer.wasTouch) return;
         if (!this.state.enabled) this.enable();
-        if (over.length > 0 || this.stickPointer) return; // tocó un botón o ya hay joystick
+        if (over.length > 0 || this.stickPointer) return;
         if (pointer.x > this.scene.scale.width * STICK_ZONE) return;
 
         this.stickPointer = pointer;
@@ -87,7 +82,6 @@ export default class TouchControls {
         this.state.y = 0;
     }
 
-    // El botón brilla cuando el súper está lleno
     setSuperReady(ready, time) {
         if (!this.state.enabled) return;
         const pulse = ready ? 0.55 + Math.sin(time * 0.012) * 0.25 : 0.3;
@@ -95,7 +89,6 @@ export default class TouchControls {
         this.superLabel.setColor(ready ? '#ffffff' : '#ffd54f');
     }
 
-    // Se esconde en la pantalla de resultados
     setVisible(visible) {
         const show = visible && this.state.enabled;
         for (const obj of [this.superButton, this.superLabel, this.pauseButton]) obj.setVisible(show);

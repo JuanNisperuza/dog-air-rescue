@@ -1,12 +1,9 @@
 import Phaser from 'phaser';
 
-// Comportamientos de los enemigos. Cada uno define spawn(enemy, now) y update(enemy, now, delta).
-// Para un enemigo nuevo: agregar un comportamiento aquí y un tipo en enemyTypes.js.
+const LEFT = 180;
 
-const LEFT = 180; // grados: hacia la izquierda
-
-// La animación de disparo arranca un frame antes de la bala, así la bala
-// coincide con el frame del fogonazo
+// The shot animation starts one frame before the bullet, so the bullet
+// lines up with the muzzle flash frame
 function updateShootTiming(e, now) {
     if (!e.shootStarted && now >= e.nextShot - e.frameTime) {
         e.playOnce('shoot');
@@ -14,13 +11,12 @@ function updateShootTiming(e, now) {
     }
     if (now >= e.nextShot) {
         e.shootStarted = false;
-        return true; // ¡ahora sale la bala!
+        return true;
     }
     return false;
 }
 
 export const BEHAVIORS = {
-    // Cruza la pantalla ondulando
     sine: {
         spawn(e) {
             e.phase = Phaser.Math.FloatBetween(0, Math.PI * 2);
@@ -31,12 +27,11 @@ export const BEHAVIORS = {
             if (amplitude === 0) return;
             const frequency = e.stat('frequency');
             const t = now - e.spawnTime;
-            // Velocidad vertical = derivada de la onda seno
+            // Vertical speed = derivative of the sine wave
             e.setVelocityY(Math.cos(t * frequency + e.phase) * amplitude * frequency * 1000);
         }
     },
 
-    // Entra, se detiene, dispara y se va
     gunner: {
         spawn(e) {
             e.state = 'enter';
@@ -65,7 +60,6 @@ export const BEHAVIORS = {
                         e.nextShot = now + e.stat('fireRate') / e.difficulty.fireRate;
 
                         if (e.shotsLeft <= 0) {
-                            // Se va en diagonal, alejándose del centro de la pantalla
                             e.state = 'leave';
                             const vy = e.y < e.scene.scale.height / 2 ? -90 : 90;
                             e.setVelocity(-e.speed * 1.3, vy);
@@ -76,7 +70,6 @@ export const BEHAVIORS = {
         }
     },
 
-    // Entra, avisa y se lanza contra el jugador
     diver: {
         spawn(e) {
             e.state = 'enter';
@@ -87,10 +80,9 @@ export const BEHAVIORS = {
             switch (e.state) {
                 case 'enter':
                     if (e.x <= e.stopAt) {
-                        // Aviso para el jugador: retrocede un poco, ojos rojos y sonido
                         e.state = 'windup';
                         e.setVelocity(40, 0);
-                        e.playAnim('warn'); // ojos rojos
+                        e.playAnim('warn');
                         e.scene.fx.emote(e, '!!', '#ff5252');
                         e.scene.fx.enemyTelegraph();
                         e.dashAt = now + e.stat('windup');
@@ -103,14 +95,13 @@ export const BEHAVIORS = {
                         e.playAnim('dash');
                         const angle = e.scene.angleToPlayer(e.x, e.y);
                         e.scene.physics.velocityFromAngle(angle, e.stat('dashSpeed') * e.difficulty.speed, e.body.velocity);
-                        e.setAngle(angle - LEFT); // la textura mira a la izquierda
+                        e.setAngle(angle - LEFT);
                     }
                     break;
             }
         }
     },
 
-    // Lento, dispara en abanico
     heavy: {
         spawn(e, now) {
             e.setVelocity(-e.speed, 0);
@@ -118,7 +109,6 @@ export const BEHAVIORS = {
             e.shootStarted = false;
         },
         update(e, now) {
-            // Se queda en el tercio derecho de la pantalla
             if (e.x < e.scene.scale.width * 0.7 && e.body.velocity.x < 0) {
                 e.setVelocityX(-e.speed * 0.15);
             }

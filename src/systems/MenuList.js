@@ -1,14 +1,7 @@
-// Lista de opciones vertical: flechas o W/S para moverse, Enter/Espacio/X para elegir
-// e izquierda/derecha para los valores (volumen). También funciona con mouse y táctil.
-// La usan la pausa, las opciones y los resultados.
-// items: [{ label: () => string, action?, left?, right? }]
-//
-// Animaciones: las opciones entran una tras otra, la elegida se mece suave,
-// al elegir se "aplasta" como un botón de caricatura y close() las saca.
 const FONT = 'Arial Black, Arial, sans-serif';
 const COLOR_IDLE = '#ffffff';
 const COLOR_SELECTED = '#ffd54f';
-const ENTER_STAGGER = 70;   // ms entre una opción y la siguiente al entrar
+const ENTER_STAGGER = 70;
 const SELECTED_SCALE = 1.12;
 
 export default class MenuList {
@@ -17,7 +10,7 @@ export default class MenuList {
         this.items = items;
         this.sfx = sfx;
         this.enabled = true;
-        this.entering = true;   // mientras las opciones van entrando
+        this.entering = true;
         this.selected = 0;
         this.pressing = false;
 
@@ -32,7 +25,6 @@ export default class MenuList {
             item.text.on('pointerdown', (pointer) => {
                 if (!this.enabled) return;
                 this.select(i, true);
-                // En las filas con valor, tocar a la izquierda baja y a la derecha sube
                 if (item.left && item.right) {
                     const local = pointer.x - item.text.x;
                     if (local < -item.text.width * 0.2) this.change(-1);
@@ -42,7 +34,6 @@ export default class MenuList {
                 this.activate();
             });
 
-            // Entrada: cada opción llega desde la derecha con un rebote
             item.text.setAlpha(0).setX(x + 80).setScale(0.6);
             scene.tweens.add({
                 targets: item.text,
@@ -79,7 +70,6 @@ export default class MenuList {
         scene.events.once('shutdown', () => scene.events.off('update', this.update, this));
     }
 
-    // Termina la entrada (de una, si el jugador ya está usando el menú)
     finishEntrance() {
         if (!this.entering) return;
         this.entering = false;
@@ -114,7 +104,6 @@ export default class MenuList {
             });
         });
 
-        // El cursor salta a la nueva opción
         if (changed) {
             this.cursor.setScale(1.6);
             this.scene.tweens.add({ targets: this.cursor, scale: 1, duration: 200, ease: 'Back.Out' });
@@ -132,7 +121,6 @@ export default class MenuList {
         });
     }
 
-    // Aplastón tipo caricatura: se achata, se estira y vuelve
     press(text, onDone) {
         this.pressing = true;
         this.scene.tweens.killTweensOf(text);
@@ -159,7 +147,6 @@ export default class MenuList {
         fn();
         this.refresh();
 
-        // El valor "salta" hacia el lado en que cambió
         this.scene.tweens.killTweensOf(item.text);
         item.text.setX(item.baseX + step * 10).setScale(SELECTED_SCALE * 1.15);
         this.scene.tweens.add({ targets: item.text, x: item.baseX, scale: SELECTED_SCALE, duration: 200, ease: 'Back.Out' });
@@ -169,7 +156,6 @@ export default class MenuList {
         for (const item of this.items) item.text.setText(item.label());
     }
 
-    // Saca las opciones (al revés de como entraron) y llama a onDone
     close(onDone) {
         this.enabled = false;
         this.entering = false;
@@ -193,7 +179,6 @@ export default class MenuList {
         this.cursor.x = text.x - (text.width * text.scaleX) / 2 - 18 + Math.sin(time * 0.01) * 4;
         this.cursor.y = text.y;
 
-        // La opción elegida se mece un poquito
         if (this.enabled && !this.entering && !this.pressing && !this.scene.tweens.isTweening(text)) {
             text.angle = Math.sin(time * 0.005) * 2;
         }

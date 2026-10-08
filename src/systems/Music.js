@@ -1,10 +1,7 @@
 import { isMuted } from './Sfx.js';
 import { musicVolume } from './settings.js';
 
-// Música de fondo con un <audio> normal en vez del loader de Phaser: así va en
-// streaming y no se decodifica la canción entera en memoria (~160 MB para 7 min).
-// Hay una sola instancia para todo el juego, por eso no se corta al reiniciar.
-const TRACK = 'assets/audio/dark-forest'; // .ogg o .mp3 según el navegador
+const TRACK = 'assets/audio/dark-forest';
 
 let instance = null;
 
@@ -16,7 +13,7 @@ export function getMusic() {
 class Music {
     constructor() {
         this.audio = new Audio();
-        // OGG pesa menos, pero Safari viejo no lo soporta
+        // OGG is smaller, but older Safari does not support it
         const ogg = this.audio.canPlayType('audio/ogg; codecs="vorbis"');
         this.audio.src = import.meta.env.BASE_URL + TRACK + (ogg ? '.ogg' : '.mp3');
         this.audio.loop = true;
@@ -24,13 +21,13 @@ class Music {
         this.audio.volume = 0;
 
         this.targetVolume = musicVolume();
-        this.muted = isMuted(); // recuerda si el jugador silenció el juego
+        this.muted = isMuted();
         this.fadeFrame = null;
         this.waitingForInput = false;
     }
 
-    // El navegador no deja sonar nada hasta que el usuario interactúa con la página,
-    // así que si falla esperamos la primera tecla o clic
+    // Browsers block audio until the user interacts with the page,
+    // so if playback fails we wait for the first key press or click
     play() {
         this.audio.play().catch(() => {
             if (this.waitingForInput) return;
@@ -62,7 +59,6 @@ class Music {
         this.fadeFrame = requestAnimationFrame(step);
     }
 
-    // Volumen normal según Options; factor < 1 para bajarla (ej. al terminar la partida)
     restore(factor = 1, duration = 800) {
         this.fadeTo(musicVolume() * factor, duration);
     }

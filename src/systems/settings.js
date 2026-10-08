@@ -1,12 +1,11 @@
 import { SOUND } from '../config/constants.js';
 import { load, save } from './storage.js';
 
-// Opciones del jugador (menú Options). Se guardan entre sesiones.
 const DEFAULTS = {
-    music: 7,       // 0 a 10
-    sfx: 7,         // 0 a 10
-    film: true,     // filtro de película vieja
-    shake: true     // temblor de cámara
+    music: 7,
+    sfx: 7,
+    film: true,
+    shake: true
 };
 
 export const settings = { ...DEFAULTS, ...load('settings', {}) };

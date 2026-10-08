@@ -1,6 +1,3 @@
-// Empaqueta los frames sueltos en atlas de Phaser (recorta la transparencia de cada
-// frame y comprime el PNG a 256 colores). Para animaciones nuevas, agregar su prefijo
-// en ATLASES. Uso: npm run atlas  (o solo algunos: npm run atlas -- fx boss)
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import texturePacker from 'free-tex-packer-core';
@@ -8,23 +5,22 @@ import sharp from 'sharp';
 
 const OUTPUT_DIR = 'public/assets/atlas';
 
-// false = PNG sin pérdida (más pesado), por si se ven bandas de color
 const COMPRESS_PNG = true;
 
 const ATLASES = [
     {
         name: 'enemies',
-        sourceDir: 'art/frames/enemies',  // generado con npm run slice
+        sourceDir: 'art/frames/enemies',
         prefixes: ['cat_']
     },
     {
         name: 'dog_plane',
-        sourceDir: 'art/frames/dog',  // generado con npm run slice
+        sourceDir: 'art/frames/dog',
         prefixes: ['dog_plane_']
     },
     {
         name: 'fx',
-        sourceDir: 'art/frames/fx',     // explosiones, chispas, humo, balas, perritos, power-ups
+        sourceDir: 'art/frames/fx',
         prefixes: ['fx_', 'pup_', 'pu_']
     },
     {
@@ -48,16 +44,16 @@ const ATLASES = [
 
 const PACKER_OPTIONS = {
     exporter: 'Phaser3',
-    width: 2048,              // tamaño máximo por hoja (si no cabe, crea otra)
+    width: 2048,
     height: 2048,
     fixedSize: false,
     powerOfTwo: false,
-    padding: 2,               // espacio entre frames (evita "sangrado" de píxeles)
-    extrude: 0,               // ⚠ con trim, extrude > 0 dibuja un borde visible alrededor de cada frame
+    padding: 2,
+    extrude: 0,               // with trim, extrude > 0 draws a visible border around each frame
     allowRotation: false,
-    allowTrim: true,          // ← recorta la transparencia: el ahorro grande
+    allowTrim: true,
     trimMode: 'trim',
-    detectIdentical: true,    // frames repetidos se guardan una sola vez
+    detectIdentical: true,
     removeFileExtension: true,
     prependFolderName: false,
     packer: 'MaxRectsPacker',
@@ -75,7 +71,6 @@ function pack(images, options) {
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
 
-// Si se pasan nombres por consola, solo se empaquetan esos
 const only = process.argv.slice(2);
 for (const atlas of ATLASES.filter((a) => only.length === 0 || only.includes(a.name))) {
     const files = readdirSync(atlas.sourceDir)
@@ -84,7 +79,7 @@ for (const atlas of ATLASES.filter((a) => only.length === 0 || only.includes(a.n
         .sort();
 
     if (files.length === 0) {
-        console.warn(`⚠ ${atlas.name}: no encontré frames en "${atlas.sourceDir}"`);
+        console.warn(`${atlas.name}: no frames found in "${atlas.sourceDir}"`);
         continue;
     }
 
@@ -104,7 +99,7 @@ for (const atlas of ATLASES.filter((a) => only.length === 0 || only.includes(a.n
         }
         writeFileSync(join(OUTPUT_DIR, file.name), buffer);
         file.buffer = buffer;
-        console.log(`  ✓ ${join(OUTPUT_DIR, file.name)}  (${(file.buffer.length / 1024).toFixed(0)} KB)`);
+        console.log(`  ${join(OUTPUT_DIR, file.name)}  (${(file.buffer.length / 1024).toFixed(0)} KB)`);
     }
-    console.log(`✔ ${atlas.name}: ${files.length} frames empaquetados`);
+    console.log(`${atlas.name}: ${files.length} frames packed`);
 }

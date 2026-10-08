@@ -4,7 +4,6 @@ import { PLAYER } from '../config/constants.js';
 import { ENEMY_ATLAS } from '../config/enemyTypes.js';
 import { createEnemyAnimations } from '../entities/Enemy.js';
 
-// Carga los assets, crea las animaciones y dibuja las texturas que todavía no tienen arte.
 export default class BootScene extends Phaser.Scene {
     constructor() {
         super('BootScene');
@@ -13,18 +12,14 @@ export default class BootScene extends Phaser.Scene {
     preload() {
         this.createLoadingBar();
 
-        // Atlas generados con npm run slice + npm run atlas (están en /public).
-        // Del jugador solo se carga el skin en uso.
         const skin = SKINS[PLAYER.skin];
         this.load.multiatlas(skin.atlas, `assets/atlas/${skin.atlas}.json`, 'assets/atlas');
 
         this.load.multiatlas(ENEMY_ATLAS, `assets/atlas/${ENEMY_ATLAS}.json`, 'assets/atlas');
 
-        // Efectos (explosiones, chispas, humo, balas, perritos, power-ups) y el jefe
         this.load.multiatlas('fx', 'assets/atlas/fx.json', 'assets/atlas');
         this.load.multiatlas('boss', 'assets/atlas/boss.json', 'assets/atlas');
 
-        // Capas del fondo (npm run parallax)
         for (const key of ['bg_sky', 'bg_far', 'bg_mid', 'bg_near']) {
             this.load.image(key, `assets/bg/${key}.webp`);
         }
@@ -48,7 +43,6 @@ export default class BootScene extends Phaser.Scene {
         this.scene.start('MenuScene');
     }
 
-    // Barra de carga (la primera visita en GitHub Pages puede tardar un poco)
     createLoadingBar() {
         const { width, height } = this.scale;
         const barWidth = 360;
@@ -63,7 +57,6 @@ export default class BootScene extends Phaser.Scene {
         this.load.on('progress', (value) => fill.setSize(Math.max(1, barWidth * value), 18));
     }
 
-    // Animaciones del atlas de efectos y del jefe
     createFxAnimations() {
         const anim = (key, atlas, frames, frameRate, repeat = 0) => {
             this.anims.create({
@@ -76,7 +69,7 @@ export default class BootScene extends Phaser.Scene {
         anim('fx_boom', 'fx', [1, 2, 3, 4, 5, 6, 7], 18);
         anim('fx_spark', 'fx', [1, 2, 3, 4], 30);
         anim('fx_puff', 'fx', [1, 2, 3], 12);
-        anim('fx_bone', 'fx', [1, 3, 2, 4, 2, 3], 18, -1);   // giro: de lado, de frente, de punta
+        anim('fx_bone', 'fx', [1, 3, 2, 4, 2, 3], 18, -1);
         anim('fx_yarn', 'fx', [1, 2, 3, 4], 10, -1);
         anim('pup_bubble', 'fx', [1, 2, 3, 4], 6, -1);
         anim('pup_happy', 'fx', [1, 2, 3, 4], 10, -1);
@@ -86,7 +79,6 @@ export default class BootScene extends Phaser.Scene {
         anim('boss_defeated', 'boss', [1, 2, 3, 4], 5);
     }
 
-    // Dibuja con Graphics y lo guarda como textura
     createTexture(key, width, height, drawFn) {
         const g = this.make.graphics({ x: 0, y: 0 }, false);
         drawFn(g);
@@ -95,12 +87,9 @@ export default class BootScene extends Phaser.Scene {
     }
 
     createPlayerAnimations() {
-        // Claves tipo "dog_idle_up"; frames tipo "dog_plane_idle_up_0001"
         const LOOPING = ['idle_straight', 'idle_up', 'idle_down', 'ghost', 'happy'];
         const skin = SKINS[PLAYER.skin];
 
-        // Cada animación es un número de frames, o { from, frames: [...] } para armarla
-        // con frames sueltos de otra (ej. el vuelo sin los frames de boca abierta)
         for (const [anim, def] of Object.entries(skin.anims)) {
             const source = typeof def === 'number' ? anim : def.from;
             const numbers = typeof def === 'number' ? Array.from({ length: def }, (_, i) => i + 1) : def.frames;
@@ -111,7 +100,7 @@ export default class BootScene extends Phaser.Scene {
                     frame: `${skin.framePrefix}${source}_${String(n).padStart(4, '0')}`
                 })),
                 frameRate: def.fps ?? skin.fps,
-                repeat: LOOPING.includes(anim) ? -1 : 0  // -1 = bucle
+                repeat: LOOPING.includes(anim) ? -1 : 0
             });
         }
     }
@@ -127,7 +116,6 @@ export default class BootScene extends Phaser.Scene {
         });
     }
 
-    // Partícula pequeña (chispas, escombros, destello del arma)
     makeParticleTexture() {
         this.createTexture('particle', 10, 10, (g) => {
             g.fillStyle(0xffffff);
@@ -135,7 +123,6 @@ export default class BootScene extends Phaser.Scene {
         });
     }
 
-    // Corazones del HUD: lleno y vacío
     makeHeartTextures() {
         const shape = (g, inset) => {
             const r = 9 - inset;
@@ -159,7 +146,6 @@ export default class BootScene extends Phaser.Scene {
         });
     }
 
-    // Anillo para la onda del súper y el escudo
     makeRingTexture() {
         this.createTexture('ring', 128, 128, (g) => {
             g.lineStyle(10, 0xffffff);
@@ -167,7 +153,6 @@ export default class BootScene extends Phaser.Scene {
         });
     }
 
-    // Bordes rojos para cuando queda una sola vida (degradado radial en un canvas)
     makeVignetteTexture() {
         const { width, height } = this.scale;
         const texture = this.textures.createCanvas('vignette', width, height);
@@ -180,7 +165,6 @@ export default class BootScene extends Phaser.Scene {
         texture.refresh();
     }
 
-    // Hélice girando vista de lado: un óvalo translúcido con dos rayas de las aspas
     makePropellerTexture() {
         this.createTexture('propblur', 16, 84, (g) => {
             g.fillStyle(0xffffff, 0.18);
@@ -200,7 +184,6 @@ export default class BootScene extends Phaser.Scene {
         });
     }
 
-    // Pájaro lejano, dos frames: alas arriba y alas abajo
     makeBirdTextures() {
         this.createTexture('bird0', 26, 14, (g) => {
             g.lineStyle(3, 0x3e2723);

@@ -1,11 +1,8 @@
 import { PARALLAX } from '../config/constants.js';
 import SunFace from './SunFace.js';
 
-// Fondo por capas: cada una es un TileSprite que se desliza a su propia velocidad.
-// Las capas se configuran en PARALLAX (constants.js).
 export default class ParallaxBackground {
     constructor(scene) {
-        // Un poco más grande que la pantalla: así el temblor de cámara no deja ver el borde
         const m = PARALLAX.margin;
         const width = scene.scale.width + m * 2;
         const height = scene.scale.height + m * 2;
@@ -13,14 +10,11 @@ export default class ParallaxBackground {
 
         for (const config of PARALLAX.layers) {
             if (config.static) {
-                // Capa fija (el cielo)
                 const sky = scene.add.image(-m, -m, config.key).setOrigin(0).setDisplaySize(width, height);
-                // El sol del cielo tiene cara animada (va justo encima del cielo)
                 this.sun = new SunFace(scene, sky);
                 continue;
             }
 
-            // Por defecto la capa se apoya en el borde de abajo
             const source = scene.textures.get(config.key).getSourceImage();
             const layerHeight = source.height * (config.tileScale ?? 1);
             const y = config.y ?? scene.scale.height - layerHeight + (config.offsetY ?? 0);
@@ -32,12 +26,10 @@ export default class ParallaxBackground {
 
             this.layers.push({ sprite, speed: config.speed });
 
-            // Los pájaros vuelan entre las nubes y la ciudad lejana
             if (config.key === 'clouds') this.birds = new Birds(scene);
         }
     }
 
-    // speedFactor acelera o frena todo el fondo a la vez
     update(delta, speedFactor = 1) {
         this.sun?.update(delta);
         this.birds?.update(delta);
@@ -48,11 +40,10 @@ export default class ParallaxBackground {
     }
 }
 
-// Bandadas de pájaros que cruzan el cielo de vez en cuando
 class Birds {
     constructor(scene) {
         this.scene = scene;
-        this.layer = scene.add.container(0, 0); // fija su lugar en el orden de dibujo
+        this.layer = scene.add.container(0, 0);
         this.nextFlock = 2500;
     }
 
@@ -68,13 +59,11 @@ class Birds {
             bird.life += delta;
             bird.x += bird.vx * dt;
             bird.y = bird.baseY + Math.sin(bird.life * 0.004 + bird.phase) * 6;
-            // Aletea cambiando de frame
             bird.setTexture(Math.floor(bird.life / 140 + bird.phase) % 2 ? 'bird1' : 'bird0');
             if (bird.x < -60 || bird.x > this.scene.scale.width + 60) bird.destroy();
         }
     }
 
-    // Formación en V, hacia la izquierda o la derecha
     spawnFlock() {
         const { width } = this.scene.scale;
         const toLeft = Math.random() < 0.6;

@@ -2,13 +2,10 @@ import Phaser from 'phaser';
 import { ENEMY_TYPES, ENEMY_ATLAS } from '../config/enemyTypes.js';
 import { BEHAVIORS } from './enemyBehaviors.js';
 
-// Una sola clase para todos los gatos: el tipo decide el arte, los stats
-// y el comportamiento, así un único pool sirve para todos.
-const FLASH_TIME = 60;       // ms del destello blanco al recibir daño
+const FLASH_TIME = 60;
 const OFFSCREEN_MARGIN = 140;
-const LOOPING = ['fly', 'dash']; // animaciones en bucle; las demás se reproducen una vez
+const LOOPING = ['fly', 'dash'];
 
-// Lo llama BootScene una sola vez
 export function createEnemyAnimations(anims) {
     for (const type of Object.values(ENEMY_TYPES)) {
         const { prefix, fps } = type.sprite;
@@ -33,9 +30,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.flashing = false;
     }
 
-    // typeKey: 'flyer' | 'gunner' | ...
-    // params: el grupo de la oleada (puede sobreescribir stats)
-    // difficulty: multiplicadores { hp, speed, fireRate }
     spawn(x, y, typeKey, params, difficulty) {
         this.type = ENEMY_TYPES[typeKey];
         this.params = params;
@@ -48,7 +42,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.setAngle(0);
         this.clearFlash();
 
-        // Anclamos en el centro del cuerpo, no del lienzo
         const { x: cx, y: cy } = sprite.center;
         this.setOrigin(cx / this.width, cy / this.height);
 
@@ -57,7 +50,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         this.playAnim('fly');
 
-        // Squash & stretch: respira todo el tiempo y se aplasta con cada golpe
         this.breathPhase = Math.random() * Math.PI * 2;
         this.punch = 0;
         this.setScale(1);
@@ -70,15 +62,12 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.behavior.spawn(this, this.spawnTime);
     }
 
-    // Animaciones
-
     playAnim(name) {
         if (!this.type.sprite.anims[name]) return;
-        this.anims.chain(); // vaciar cola pendiente
+        this.anims.chain();
         this.play(this.type.sprite.prefix + name);
     }
 
-    // Reproduce la animación una vez y vuelve a 'fly'
     playOnce(name) {
         if (!this.type.sprite.anims[name]) return;
         this.anims.chain();
@@ -86,7 +75,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.anims.chain(this.type.sprite.prefix + 'fly');
     }
 
-    // ms por frame, para sincronizar la bala con el fogonazo
     get frameTime() {
         return 1000 / this.type.sprite.fps;
     }
@@ -94,7 +82,6 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
     get muzzleX() { return this.x + (this.type.sprite.muzzle?.x ?? -this.width / 2); }
     get muzzleY() { return this.y + (this.type.sprite.muzzle?.y ?? 0); }
 
-    // El valor del grupo de la oleada tiene prioridad sobre el del tipo
     stat(name) {
         const value = this.params[name];
         return value !== undefined ? value : this.type[name];
@@ -114,14 +101,13 @@ export default class Enemy extends Phaser.Physics.Arcade.Sprite {
         const breathe = Math.sin(now * 0.009 + this.breathPhase) * 0.035;
         this.setScale(1 + breathe + this.punch * 0.22, 1 - breathe - this.punch * 0.16);
 
-        // Por la derecha no, porque ahí es donde aparecen
+        // Not off the right edge, since that is where they spawn
         const { height } = this.scene.scale;
         if (this.x < -OFFSCREEN_MARGIN || this.y < -OFFSCREEN_MARGIN || this.y > height + OFFSCREEN_MARGIN) {
             this.kill();
         }
     }
 
-    // Devuelve true si murió
     takeDamage(amount) {
         this.hp -= amount;
         this.punch = 1;

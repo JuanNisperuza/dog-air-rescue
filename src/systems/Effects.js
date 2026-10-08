@@ -3,13 +3,10 @@ import { JUICE } from '../config/constants.js';
 import { settings } from './settings.js';
 import Corpse from '../entities/Corpse.js';
 
-// Efectos de impacto: partículas, popups de puntaje, destello del arma, hit-stop,
-// temblor de cámara, humo y muertes de enemigos. GameScene avisa qué pasó y aquí
-// se decide cómo se ve y cómo suena.
 const POPUP_POOL = 12;
-const POPUP_LIFE = 650;     // ms
-const POPUP_RISE = 45;      // px que sube
-const MUZZLE_TIME = 45;     // ms
+const POPUP_LIFE = 650;
+const POPUP_RISE = 45;
+const MUZZLE_TIME = 45;
 const CORPSE_POOL = 16;
 const HIT_POOL = 10;
 const PUFFS = ['fx_puff_0001', 'fx_puff_0002', 'fx_puff_0003'];
@@ -22,7 +19,6 @@ const COMIC_WORDS = {
     chain: ['KABOOM!']
 };
 
-// Color del popup según el multiplicador del combo (x1 ... x5)
 const POPUP_COLORS = ['#fff176', '#ffd54f', '#ffab40', '#ff7043', '#ff4081'];
 
 export default class Effects {
@@ -31,7 +27,6 @@ export default class Effects {
         this.sfx = sfx;
         this.resumeAt = 0;
 
-        // Humo (motor del jugador y enemigos que caen)
         this.smoke = scene.add.particles(0, 0, 'fx', {
             frame: PUFFS,
             speedX: { min: -160, max: -80 },
@@ -44,7 +39,6 @@ export default class Effects {
             emitting: false
         });
 
-        // Chispa animada en cada impacto de bala
         this.hits = [];
         for (let i = 0; i < HIT_POOL; i++) {
             const spark = scene.add.sprite(0, 0, 'fx', 'fx_spark_0001').setDepth(11).setVisible(false);
@@ -53,14 +47,12 @@ export default class Effects {
         }
         this.nextHit = 0;
 
-        // Restos de enemigos que caen o explotan por partes
         this.corpses = scene.add.group({ classType: Corpse, maxSize: CORPSE_POOL, runChildUpdate: true });
         this.corpses.createMultiple({ key: 'particle', quantity: CORPSE_POOL, active: false, visible: false });
 
-        // Partículas de impacto
         this.sparks = scene.add.particles(0, 0, 'particle', {
             speed: { min: 90, max: 240 },
-            angle: { min: 120, max: 240 },   // hacia atrás: de la derecha vienen las balas
+            angle: { min: 120, max: 240 },
             lifespan: 220,
             scale: { start: 0.9, end: 0 },
             tint: [0xffffff, 0xfff59d, 0xffe082],
@@ -78,7 +70,6 @@ export default class Effects {
             emitting: false
         }).setDepth(11);
 
-        // Pedazos de globo
         this.confetti = scene.add.particles(0, 0, 'particle', {
             speed: { min: 140, max: 320 },
             lifespan: { min: 500, max: 900 },
@@ -90,7 +81,6 @@ export default class Effects {
             emitting: false
         }).setDepth(11);
 
-        // Líneas de velocidad (cruzan la pantalla al acelerar)
         const { width, height } = scene.scale;
         this.speedLines = scene.add.particles(0, 0, 'speedline', {
             x: width + 30,
@@ -104,7 +94,6 @@ export default class Effects {
         });
         this.speedLinesOn = false;
 
-        // Avisos "!" sobre los enemigos
         this.emotes = [];
         for (let i = 0; i < EMOTE_POOL; i++) {
             const text = scene.add.text(0, 0, '', {
@@ -114,7 +103,6 @@ export default class Effects {
         }
         this.nextEmote = 0;
 
-        // Onomatopeyas de cómic ("BAM!", "POW!")
         this.comics = [];
         for (let i = 0; i < COMIC_POOL; i++) {
             const text = scene.add.text(0, 0, '', {
@@ -124,7 +112,6 @@ export default class Effects {
         }
         this.nextComic = 0;
 
-        // Destello del arma
         this.muzzle = scene.add.image(0, 0, 'particle')
             .setTint(0xfff59d)
             .setBlendMode('ADD')
@@ -132,7 +119,6 @@ export default class Effects {
             .setVisible(false);
         this.muzzleUntil = 0;
 
-        // Popups de puntaje (pool)
         this.popups = [];
         for (let i = 0; i < POPUP_POOL; i++) {
             const text = scene.add.text(0, 0, '', {
@@ -150,7 +136,6 @@ export default class Effects {
         this.nextPopup = 0;
     }
 
-    // Humo continuo saliendo de la cola del avión del jugador
     attachEngineSmoke(player, offsetX, offsetY) {
         this.engine = this.scene.add.particles(0, 0, 'fx', {
             frame: PUFFS,
@@ -164,7 +149,6 @@ export default class Effects {
             frequency: 45
         });
         this.engine.startFollow(player, offsetX, offsetY);
-        // Debajo del jugador en la lista de dibujo
         this.scene.children.moveBelow(this.engine, player);
         return this.engine;
     }
@@ -191,7 +175,6 @@ export default class Effects {
             emote.setPosition(target.x, top - 4 + Math.sin(emote.life * 0.03) * 3);
         }
 
-        // Popups animados a mano (sin tweens)
         for (const text of this.popups) {
             if (!text.visible) continue;
             text.life += delta;
@@ -207,9 +190,6 @@ export default class Effects {
         }
     }
 
-    // Utilidades
-
-    // Congela la física unos ms para que los golpes se sientan
     hitStop(ms) {
         if (!JUICE.hitStop || ms <= 0 || this.scene.isGameOver) return;
         this.scene.physics.world.pause();
@@ -225,10 +205,9 @@ export default class Effects {
         this.label(x, y, '+' + value, POPUP_COLORS[Math.min(multiplier, POPUP_COLORS.length) - 1], 1 + (multiplier - 1) * 0.15);
     }
 
-    // Texto flotante cualquiera ("RESCUED!", "SPREAD!"...)
     label(x, y, message, color = '#ffffff', scale = 1) {
         const text = this.popups[this.nextPopup];
-        this.nextPopup = (this.nextPopup + 1) % POPUP_POOL; // round-robin: el más viejo se reutiliza
+        this.nextPopup = (this.nextPopup + 1) % POPUP_POOL;
         text.setText(message);
         text.setColor(color);
         text.baseScale = scale;
@@ -237,7 +216,6 @@ export default class Effects {
         text.life = 0;
     }
 
-    // "!" que salta sobre un enemigo y lo sigue un momento
     emote(target, text, color = '#ffeb3b', scale = 1) {
         const emote = this.emotes[this.nextEmote];
         this.nextEmote = (this.nextEmote + 1) % EMOTE_POOL;
@@ -249,7 +227,6 @@ export default class Effects {
         this.scene.tweens.add({ targets: emote, scale, angle: 0, duration: 250, ease: 'Back.Out' });
     }
 
-    // Palabra de cómic que salta girada y se desvanece
     comic(x, y, word) {
         const text = this.comics[this.nextComic];
         this.nextComic = (this.nextComic + 1) % COMIC_POOL;
@@ -276,7 +253,6 @@ export default class Effects {
         else this.speedLines.stop();
     }
 
-    // Separa los colores de la imagen por un instante (solo con el filtro de película)
     aberration(amount) {
         const found = this.scene.cameras.main.getPostPipeline('OldFilm');
         const pipeline = Array.isArray(found) ? found[0] : found;
@@ -308,8 +284,6 @@ export default class Effects {
         this.comic(x, y, Phaser.Utils.Array.GetRandom(COMIC_WORDS.chain));
     }
 
-    // Eventos del juego
-
     playerShoot(x, y) {
         this.muzzle.setPosition(x, y).setScale(Phaser.Math.FloatBetween(2.2, 3)).setVisible(true);
         this.muzzleUntil = this.scene.now + MUZZLE_TIME;
@@ -328,7 +302,7 @@ export default class Effects {
         this.sfx.hit();
     }
 
-    // points = 0 cuando muere por chocar con el jugador
+    // points = 0 when it dies by crashing into the player
     enemyKilled(enemy, points = 0, multiplier = 1) {
         const { x, y } = enemy;
         const style = enemy.stat('death') ?? 'spin';
@@ -339,7 +313,6 @@ export default class Effects {
         if (corpse) corpse.start(enemy, style, this);
 
         if (style === 'chain') {
-            // La explosión grande la hace el cuerpo al final de la cadena
             this.scene.explode(x, y, 1.2);
             this.sfx.explosion(false);
             this.shake(120, 0.006);
@@ -348,7 +321,6 @@ export default class Effects {
         }
 
         this.scene.explode(x, y, 1);
-        // A veces sale una palabra de cómic (siempre para los que valen más)
         if (points > 0 && (Math.random() < 0.35 || enemy.stat('points') >= 25)) {
             this.comic(x, y, Phaser.Utils.Array.GetRandom(COMIC_WORDS[style] ?? COMIC_WORDS.spin));
         }
@@ -363,7 +335,6 @@ export default class Effects {
         this.hitStop(22);
     }
 
-    // Ataque especial: dos anillos que se expanden desde el jugador
     superBlast(x, y) {
         for (let i = 0; i < 2; i++) {
             const ring = this.scene.add.image(x, y, 'ring')
@@ -389,7 +360,6 @@ export default class Effects {
         this.sfx.superReady();
     }
 
-    // La bala enemiga se desintegra (súper o cambio de fase del jefe)
     bulletCleared(x, y) {
         this.sparks.emitParticleAt(x, y, 2);
     }

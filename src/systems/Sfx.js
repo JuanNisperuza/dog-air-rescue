@@ -1,12 +1,8 @@
 import { load, save } from './storage.js';
 import { sfxVolume } from './settings.js';
 
-// Efectos de sonido sintetizados con Web Audio (osciladores y ruido), sin archivos de audio.
-
-// El buffer de ruido se crea una sola vez
 let noiseBuffer = null;
 
-// El mute es global (menú y juego) y se guarda entre sesiones
 let globalMuted = load('muted', false);
 
 export function isMuted() {
@@ -15,7 +11,7 @@ export function isMuted() {
 
 function getNoiseBuffer(ctx) {
     if (noiseBuffer && noiseBuffer.sampleRate === ctx.sampleRate) return noiseBuffer;
-    const length = ctx.sampleRate; // 1 segundo
+    const length = ctx.sampleRate;
     noiseBuffer = ctx.createBuffer(1, length, ctx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
     for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
@@ -27,7 +23,7 @@ export default class Sfx {
         this.ctx = scene.sound.context || null;
         this.enabled = !!this.ctx;
         this.muted = globalMuted;
-        this.lastPlayed = {}; // para no apilar el mismo sonido muchas veces seguidas
+        this.lastPlayed = {};
 
         if (!this.enabled) return;
 
@@ -45,11 +41,10 @@ export default class Sfx {
         return this.muted;
     }
 
-    // minGap evita que el mismo sonido se apile muchas veces seguidas
     canPlay(name, minGap = 0) {
         if (!this.enabled || this.muted) return false;
         if (this.ctx.state === 'suspended') this.ctx.resume();
-        this.master.gain.value = sfxVolume(); // por si cambió en Options
+        this.master.gain.value = sfxVolume();
 
         const now = this.ctx.currentTime * 1000;
         if (minGap > 0 && now - (this.lastPlayed[name] ?? -Infinity) < minGap) return false;
@@ -57,9 +52,6 @@ export default class Sfx {
         return true;
     }
 
-    // Piezas básicas
-
-    // Tono con barrido de frecuencia
     tone({ type = 'square', freq, freqEnd = freq, duration, volume, delay = 0 }) {
         const t = this.ctx.currentTime + delay;
         const osc = this.ctx.createOscillator();
@@ -78,7 +70,6 @@ export default class Sfx {
         osc.stop(t + duration + 0.02);
     }
 
-    // Ruido filtrado, para explosiones e impactos
     burst({ duration, volume, filterFreq = 2000, filterEnd = 200, delay = 0 }) {
         const t = this.ctx.currentTime + delay;
         const src = this.ctx.createBufferSource();
@@ -94,15 +85,13 @@ export default class Sfx {
         gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
 
         src.connect(filter).connect(gain).connect(this.master);
-        src.start(t, Math.random() * 0.5); // cada explosión empieza en otro punto del ruido
+        src.start(t, Math.random() * 0.5);
         src.stop(t + duration + 0.02);
     }
 
-    // Sonidos del juego
-
     shoot() {
         if (!this.canPlay('shoot')) return;
-        const pitch = 1 + (Math.random() - 0.5) * 0.15; // variación: no suena robótico
+        const pitch = 1 + (Math.random() - 0.5) * 0.15;
         this.tone({ type: 'square', freq: 900 * pitch, freqEnd: 420 * pitch, duration: 0.06, volume: 0.045 });
     }
 
@@ -133,13 +122,10 @@ export default class Sfx {
         this.burst({ duration: 0.15, volume: 0.2, filterFreq: 3000, filterEnd: 600 });
     }
 
-    // Aviso del kamikaze antes de lanzarse
     windup() {
         if (!this.canPlay('windup', 80)) return;
         this.tone({ type: 'sine', freq: 300, freqEnd: 1100, duration: 0.45, volume: 0.07 });
     }
-
-    // Menú
 
     uiMove() {
         if (!this.canPlay('uiMove', 40)) return;
@@ -152,14 +138,12 @@ export default class Sfx {
         this.tone({ type: 'square', freq: 784, duration: 0.14, volume: 0.06, delay: 0.07 });
     }
 
-    // Globo reventando
     pop() {
         if (!this.canPlay('pop', 40)) return;
         this.burst({ duration: 0.09, volume: 0.35, filterFreq: 7000, filterEnd: 2500 });
         this.tone({ type: 'square', freq: 950, freqEnd: 260, duration: 0.07, volume: 0.06 });
     }
 
-    // Sube el multiplicador del combo: más agudo en cada nivel
     comboUp(level) {
         if (!this.canPlay('comboUp', 100)) return;
         const base = 440 * Math.pow(1.25, level);
@@ -167,7 +151,6 @@ export default class Sfx {
         this.tone({ type: 'square', freq: base * 1.5, duration: 0.12, volume: 0.06, delay: 0.07 });
     }
 
-    // Ladrido del súper: dos "guau" graves
     bark() {
         if (!this.canPlay('bark', 200)) return;
         [0, 0.16].forEach((delay) => {
@@ -177,7 +160,6 @@ export default class Sfx {
         this.burst({ duration: 0.9, volume: 0.4, filterFreq: 1200, filterEnd: 60, delay: 0.1 });
     }
 
-    // El súper ya está listo
     superReady() {
         if (!this.canPlay('superReady', 300)) return;
         [660, 880, 1320].forEach((freq, i) => {
@@ -185,7 +167,6 @@ export default class Sfx {
         });
     }
 
-    // Perrito rescatado: arpegio alegre
     rescue() {
         if (!this.canPlay('rescue', 80)) return;
         [523, 659, 784, 1047].forEach((freq, i) => {
@@ -205,14 +186,12 @@ export default class Sfx {
         this.tone({ type: 'triangle', freq: 1800, freqEnd: 400, duration: 0.3, volume: 0.08 });
     }
 
-    // Alarma del aviso del jefe
     siren() {
         if (!this.canPlay('siren', 300)) return;
         this.tone({ type: 'sawtooth', freq: 440, freqEnd: 880, duration: 0.35, volume: 0.07 });
         this.tone({ type: 'sawtooth', freq: 880, freqEnd: 440, duration: 0.35, volume: 0.07, delay: 0.35 });
     }
 
-    // Rugido (maullido grave) del jefe al cambiar de fase
     roar() {
         if (!this.canPlay('roar', 300)) return;
         this.tone({ type: 'sawtooth', freq: 180, freqEnd: 420, duration: 0.25, volume: 0.15 });
@@ -227,13 +206,11 @@ export default class Sfx {
         });
     }
 
-    // Conteo de la pantalla de resultados
     tick() {
         if (!this.canPlay('tick', 35)) return;
         this.tone({ type: 'square', freq: 1400, duration: 0.025, volume: 0.03 });
     }
 
-    // La nota cae como un sello
     stamp() {
         if (!this.canPlay('stamp', 100)) return;
         this.burst({ duration: 0.35, volume: 0.45, filterFreq: 900, filterEnd: 80 });
@@ -243,7 +220,6 @@ export default class Sfx {
     gameOver() {
         if (!this.canPlay('gameOver')) return;
         this.burst({ duration: 1.0, volume: 0.5, filterFreq: 1400, filterEnd: 60 });
-        // Tres notas descendentes
         [440, 349, 262].forEach((freq, i) => {
             this.tone({ type: 'square', freq, freqEnd: freq * 0.97, duration: 0.28, volume: 0.07, delay: 0.5 + i * 0.3 });
         });

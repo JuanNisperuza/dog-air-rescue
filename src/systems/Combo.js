@@ -1,13 +1,10 @@
 import { COMBO } from '../config/constants.js';
 
-// Combo: matar enemigos seguidos (sin dejar pasar más de COMBO.window ms)
-// sube un multiplicador de puntos. Recibir daño lo corta.
-// Publica 'combo' y 'comboExpires' en el registry para que el HUD lo muestre.
 export default class Combo {
     constructor(scene) {
         this.scene = scene;
         this.count = 0;
-        this.best = 0;          // mejor combo de la partida (para los resultados)
+        this.best = 0;
         this.expiresAt = 0;
         this.publish();
     }
@@ -20,7 +17,6 @@ export default class Combo {
         return Math.min(COMBO.maxMultiplier, 1 + Math.floor(this.count / COMBO.killsPerLevel));
     }
 
-    // Registra una muerte y devuelve el multiplicador a aplicar
     kill() {
         this.count = this.now <= this.expiresAt ? this.count + 1 : 1;
         this.expiresAt = this.now + COMBO.window;

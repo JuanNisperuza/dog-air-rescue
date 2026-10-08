@@ -1,9 +1,4 @@
-"""Corta las hojas de efectos y del jefe (fondo magenta) en frames PNG con transparencia.
-
-Estas hojas traen bordes de cuadrícula y celdas de distinto tamaño, por eso tienen
-su propio script (Python: Pillow, numpy y scipy). Después: npm run atlas -- fx boss
-Uso: python tools/slice-fx.py
-"""
+# Usage: python tools/slice-fx.py (requires Pillow, numpy and scipy)
 import os
 import numpy as np
 from PIL import Image
@@ -19,7 +14,6 @@ def key_out(rgb):
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
     key = np.minimum(r, b) - g
     alpha = np.clip((KEY_CLEAR - key) / (KEY_CLEAR - KEY_SOLID), 0, 1)
-    # Despill solo en los bordes: quita el tinte magenta
     edge = alpha < 0.98
     excess = np.clip(np.minimum(r, b) - g, 0, None)
     r = np.where(edge, r - excess * 0.9, r)
@@ -30,7 +24,6 @@ def key_out(rgb):
 
 
 def drop_small(rgba, min_area=60, drop_flat=False):
-    """Quita islas pequeñas (ruido) y, si se pide, sombras planas abajo."""
     mask = rgba[..., 3] > 40
     lab, n = ndimage.label(mask)
     if n == 0:
@@ -46,7 +39,7 @@ def drop_small(rgba, min_area=60, drop_flat=False):
             h, w = np.ptp(ys) + 1, np.ptp(xs) + 1
             by = ndimage.find_objects((lab == biggest).astype(int))[0][0]
             if h < w * 0.35 and ys.min() > by.stop - 40:
-                continue  # sombra elíptica bajo el personaje
+                continue
         keep[i] = True
     soft = ndimage.binary_dilation(keep[lab], iterations=3)
     rgba = rgba.copy()
@@ -68,7 +61,6 @@ def save(rgba, path, scale):
 
 
 def centered(frames, scale, path_fmt):
-    """Recorta cada frame a su contenido y lo centra en un lienzo común."""
     boxes = []
     for f in frames:
         ys, xs = np.nonzero(f[..., 3] > 20)
@@ -87,7 +79,6 @@ def grid(cols, rows):
 
 
 def anchored(frames, anchor_fn, scale, path_fmt):
-    """Alinea frames por un punto de anclaje (ej. el centro del zepelín)."""
     anchors = [anchor_fn(f) for f in frames]
     left = max(ax for ax, ay in anchors)
     top = max(ay for ax, ay in anchors)
@@ -103,7 +94,6 @@ def anchored(frames, anchor_fn, scale, path_fmt):
 
 
 def feather(rgba, px=40):
-    """Desvanece los bordes del recorte (humo cortado por la celda)."""
     h, w = rgba.shape[:2]
     ramp_x = np.clip(np.minimum(np.arange(w), w - 1 - np.arange(w)) / px, 0, 1)
     ramp_y = np.clip(np.minimum(np.arange(h), h - 1 - np.arange(h)) / px, 0, 1)
@@ -117,7 +107,6 @@ def zeppelin_anchor(rgba):
     r, g, b, al = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
     grey = (al > 200) & (abs(r - g) < 18) & (abs(g - b) < 18) & (r > 45) & (r < 120)
     ys, xs = np.nonzero(grey)
-    # el zepelín es la masa gris grande de la mitad de abajo
     sel = ys > rgba.shape[0] * 0.45
     return int(np.median(xs[sel])), int(np.median(ys[sel]))
 
@@ -125,36 +114,30 @@ def zeppelin_anchor(rgba):
 SHEETS = ['fx_explosion', 'fx_hits_smoke', 'fx_projectiles', 'puppy', 'boss_idle_attack', 'boss_angry_defeated', 'powerups']
 img = {i: Image.open(f'{SRC}/{name}.jpeg') for i, name in enumerate(SHEETS, 1)}
 
-# 1. Explosión: 8 cajas con borde negro (el último frame casi vacío se omite)
 boxes = grid([(19, 502), (528, 1011), (1037, 1519), (1546, 2028)], [(406, 1011), (1036, 1526)])
 frames = [b for row in boxes for b in row][:7]
 for i, b in enumerate(frames, 1):
     save(drop_small(key_out(cell(img[1], b, 10))), f'{OUT}/fx/fx_boom_{i:04d}.png', 0.3)
 
-# 2. Chispas (fila 2) y humo (fila 3, los 3 primeros)
 cols2 = [(14, 508), (523, 1016), (1031, 1525), (1540, 2033)]
 for i, b in enumerate(grid(cols2, [(425, 1016)])[0], 1):
     save(key_out(cell(img[2], b, 10)), f'{OUT}/fx/fx_spark_{i:04d}.png', 0.16)
 for i, b in enumerate(grid(cols2, [(1031, 1590)])[0][:3], 1):
     save(drop_small(key_out(cell(img[2], b, 10))), f'{OUT}/fx/fx_puff_{i:04d}.png', 0.2)
 
-# 3. Hueso (fila 1) y lana (fila 3)
 cols3 = [(0, 506), (516, 1019), (1028, 1531), (1541, 2048)]
 centered([drop_small(key_out(cell(img[3], b, 12))) for b in grid(cols3, [(0, 507)])[0]], 0.09, OUT + '/fx/fx_bone_{:04d}.png')
 centered([drop_small(key_out(cell(img[3], b, 12))) for b in grid(cols3, [(1028, 1531)])[0]], 0.09, OUT + '/fx/fx_yarn_{:04d}.png')
 
-# 4. Perrito: en burbuja (fila 1) y feliz (fila 2, sin la sombra del piso)
 cols4 = [(0, 512), (512, 1024), (1024, 1536), (1536, 2048)]
 centered([drop_small(key_out(cell(img[4], b, 6))) for b in grid(cols4, [(0, 1024)])[0]], 0.15, OUT + '/fx/pup_bubble_{:04d}.png')
 centered([drop_small(key_out(cell(img[4], b, 6)), drop_flat=True) for b in grid(cols4, [(1024, 2048)])[0]], 0.15, OUT + '/fx/pup_happy_{:04d}.png')
 
-# 7. Íconos de power-ups
 names = ['spread', 'rapid', 'shield', 'super']
 for i, name in enumerate(names):
     b = (i * 1032, 0, (i + 1) * 1032, 1024)
     save(drop_small(key_out(cell(img[7], b, 6))), f'{OUT}/fx/pu_{name}.png', 0.07)
 
-# 5 y 6. Jefe: todos los frames alineados por el centro del zepelín
 cols5 = [(0, 510), (513, 1022), (1026, 1534), (1538, 2048)]
 rows5 = [(0, 1022), (1026, 2048)]
 boss = {}

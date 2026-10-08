@@ -1,10 +1,3 @@
-// Diseño de las oleadas.
-// Cada grupo: at (ms desde que empieza la oleada), type, formation
-// (single | line | column | v | random), count, y (0 arriba, 1 abajo)
-// y, si hace falta, cualquier stat del tipo para sobreescribirlo.
-// rescues: perritos en burbuja para rescatar (at, y).
-// Una oleada termina cuando ya salieron todos y no queda ninguno vivo.
-// Después de la última oleada llega el jefe.
 export const WAVE_LIST = [
     {
         name: 'Warm-up',

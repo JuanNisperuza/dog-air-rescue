@@ -1,8 +1,8 @@
-# 🐶✈️ Dog Air Rescue
+# Dog Air Rescue
 
-A small side-scrolling shoot 'em up made with **Phaser 3** and **Vite**. The cats of the city stole the puppies — fly in and get them back.
+A small side-scrolling shoot 'em up made with **Phaser 3** and **Vite**. The cats of the city stole the puppies. Fly in and get them back.
 
-**[▶ Play it in your browser](https://juannisperuza.github.io/dog-air-rescue/)** (desktop or mobile)
+**[Play it in your browser](https://juannisperuza.github.io/dog-air-rescue/)** (desktop or mobile)
 
 ![Gameplay](docs/gameplay.gif)
 
@@ -47,11 +47,11 @@ On phones and tablets: drag anywhere on the left side to move (the plane fires o
 
 ## Asset pipeline
 
-The art was generated as sprite sheets on a flat magenta background and processed with small Node scripts (using [sharp](https://sharp.pixelplumbing.com/)):
+The art starts as sprite sheets on a flat magenta background and is processed with small Node scripts (using [sharp](https://sharp.pixelplumbing.com/)):
 
 ```
-sprite sheet ──► npm run slice ──► individual frames ──► npm run atlas ──► compressed texture atlas
-background art  ──► npm run parallax ──► seamless WebP layers
+sprite sheet -> npm run slice -> individual frames -> npm run atlas -> compressed texture atlas
+background art -> npm run parallax -> seamless WebP layers
 ```
 
 - **`slice`** removes the magenta background (chroma key plus despill), splits the sheet into frames and aligns them on the character's body so animations don't jitter. A *connected components* mode handles sheets where effects such as muzzle flashes spill into the neighboring cell.
@@ -62,10 +62,10 @@ background art  ──► npm run parallax ──► seamless WebP layers
 
 ```
 src/
-├── config/     tuning, skins, enemy types and wave design
-├── entities/   player, enemies and their behaviors, boss, pickups, bullets, explosions
-├── scenes/     Boot → Menu → Game (+ UI on top), Pause, Options, Results, Transition
-└── systems/    waves, effects, combo, sound, music, settings, touch controls, film shader
+|-- config/     tuning, skins, enemy types and wave design
+|-- entities/   player, enemies and their behaviors, boss, pickups, bullets, explosions
+|-- scenes/     Boot, Menu, Game (with UI on top), Pause, Options, Results, Transition
+`-- systems/    waves, effects, combo, sound, music, settings, touch controls, film shader
 tools/          asset pipeline scripts
 ```
 

@@ -1,13 +1,8 @@
 import Phaser from 'phaser';
 
-// Lo que queda de un enemigo al morir. Copia su frame y se anima solo, así el
-// enemigo vuelve al pool de inmediato. Estilos (death en enemyTypes.js):
-//   pop   → el globo revienta: queda solo la canasta y cae
-//   spin  → cae girando y echando humo
-//   chain → tiembla con explosiones en cadena y termina en una explosión grande
 const GRAVITY = 900;
 const CHAIN_BOOMS = 6;
-const CHAIN_STEP = 140;     // ms entre explosiones
+const CHAIN_STEP = 140;
 
 export default class Corpse extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y) {
@@ -33,7 +28,6 @@ export default class Corpse extends Phaser.GameObjects.Sprite {
         const vx = enemy.body.velocity.x;
         switch (style) {
             case 'pop':
-                // Recortamos el globo (mitad de arriba del frame) y cae solo la canasta
                 this.setCrop(0, this.frame.realHeight * enemy.originY, this.frame.realWidth, this.frame.realHeight);
                 this.vx = vx * 0.2;
                 this.vy = -40;
@@ -43,7 +37,7 @@ export default class Corpse extends Phaser.GameObjects.Sprite {
                 this.baseX = enemy.x;
                 this.baseY = enemy.y;
                 break;
-            default: // spin
+            default:
                 this.vx = vx * 0.4;
                 this.vy = -140;
                 this.spin = Phaser.Math.RND.sign() * Phaser.Math.Between(420, 720);
@@ -72,7 +66,6 @@ export default class Corpse extends Phaser.GameObjects.Sprite {
     }
 
     updateChain() {
-        // Tiembla, parpadea y se va hundiendo mientras explota por partes
         this.x = this.baseX + Phaser.Math.Between(-4, 4);
         this.y = this.baseY + Phaser.Math.Between(-3, 3) + this.elapsed * 0.03;
         if (Math.floor(this.elapsed / 60) % 2) this.setTintFill(0xffffff);

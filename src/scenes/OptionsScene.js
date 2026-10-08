@@ -5,8 +5,6 @@ import { getMusic } from '../systems/Music.js';
 import { settings, saveSettings } from '../systems/settings.js';
 import { applyFilm } from '../systems/OldFilmPipeline.js';
 
-// Panel de opciones. Se abre desde el menú o desde la pausa: pausa la escena que lo
-// abrió y la reanuda al cerrarse. Los cambios se guardan al momento.
 const FONT = 'Arial Black, Arial, sans-serif';
 
 export default class OptionsScene extends Phaser.Scene {
@@ -14,7 +12,6 @@ export default class OptionsScene extends Phaser.Scene {
         super('OptionsScene');
     }
 
-    // data.from: escena que lo abrió; data.musicFactor: volumen relativo de la música allí
     create(data) {
         const { width, height } = this.scale;
         this.from = data.from;
@@ -59,7 +56,6 @@ export default class OptionsScene extends Phaser.Scene {
 
         this.input.keyboard.on('keydown-ESC', () => this.close());
 
-        // El panel se despliega de arriba a abajo, con un rebote
         this.tweens.add({ targets: this.shade, alpha: 1, duration: 150 });
         this.panel.setScale(1, 0.05);
         this.tweens.add({ targets: this.panel, scaleY: 1, duration: 280, ease: 'Back.Out' });
@@ -75,7 +71,6 @@ export default class OptionsScene extends Phaser.Scene {
         if (key === 'music') this.music.restore(this.musicFactor, 100);
     }
 
-    // El filtro se aplica a la cámara de cada escena que lo usa
     refreshFilm() {
         for (const key of ['MenuScene', 'GameScene']) {
             const scene = this.scene.get(key);
@@ -83,7 +78,6 @@ export default class OptionsScene extends Phaser.Scene {
         }
     }
 
-    // Se cierra al revés: opciones afuera y el panel se pliega
     close() {
         if (this.closing || !this.list.enabled) return;
         this.closing = true;

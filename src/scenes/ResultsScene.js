@@ -4,20 +4,16 @@ import Sfx from '../systems/Sfx.js';
 import MenuList from '../systems/MenuList.js';
 import { load, save } from '../systems/storage.js';
 
-// Pantalla de resultados al estilo Cuphead: una tarjeta de papel donde los números
-// se cuentan uno por uno y al final cae la nota como un sello.
-// Al perder no hay nota: se muestra cuánto del nivel alcanzaste.
 const FONT = 'Arial Black, Arial, sans-serif';
 const PAPER = 0xf3e5c0;
 const INK = '#3e2723';
 const ROW_DELAY = 380;
 const GRADES = ['C-', 'C', 'C+', 'B-', 'B', 'B+', 'A-', 'A', 'A+', 'S'];
 
-// Puntos de 0 a 10 → letra
-export function computeGrade(r) {
+function computeGrade(r) {
     let points = 0;
-    points += r.hp;                                             // hasta 3
-    points += r.puppies > 0 ? (r.rescued / r.puppies) * 3 : 0;  // hasta 3
+    points += r.hp;
+    points += r.puppies > 0 ? (r.rescued / r.puppies) * 3 : 0;
     points += r.time <= GRADE.parTime ? 2 : r.time <= GRADE.parTime * 1.3 ? 1 : 0;
     points += r.bestCombo >= GRADE.comboGreat ? 2 : r.bestCombo >= GRADE.comboGood ? 1 : 0;
 
@@ -42,12 +38,11 @@ export default class ResultsScene extends Phaser.Scene {
         this.game_ = this.scene.get('GameScene');
         this.sfx = new Sfx(this);
         this.result = r;
-        this.leaving = false; // la escena se reutiliza entre partidas
+        this.leaving = false; // the scene is reused between runs
         this.list = null;
 
         this.add.rectangle(0, 0, width, height, 0x000000, 0.5).setOrigin(0).setInteractive();
 
-        // Tarjeta de papel, un poco girada
         const card = this.add.container(width / 2 - 90, height / 2 + 10).setAngle(-1.5);
         card.add(this.add.rectangle(8, 8, 520, 430, 0x000000, 0.35));
         card.add(this.add.rectangle(0, 0, 520, 430, PAPER).setStrokeStyle(5, 0x3e2723));
@@ -57,7 +52,6 @@ export default class ResultsScene extends Phaser.Scene {
         card.add(this.add.rectangle(0, -146, 440, 4, 0x3e2723));
         this.card = card;
 
-        // Filas: etiqueta a la izquierda, valor que se cuenta a la derecha
         const rows = [
             ['TIME', r.time, (v) => formatTime(v)],
             ['HP LEFT', r.hp, (v) => `${Math.round(v)} / ${r.maxHp}`],
@@ -74,13 +68,11 @@ export default class ResultsScene extends Phaser.Scene {
             return { left, right, value, format };
         });
 
-        // Nueva mejor marca
         this.bestText = this.add.text(215, 132, r.isNewBest ? 'NEW BEST!' : `BEST ${r.best}`, {
             fontFamily: FONT, fontSize: '18px', color: r.isNewBest ? '#c62828' : '#6d4c41'
         }).setOrigin(1, 0.5).setAlpha(0);
         card.add(this.bestText);
 
-        // Contar las filas una por una
         this.rows.forEach((row, i) => {
             this.time.delayedCall(500 + i * ROW_DELAY, () => this.countRow(row));
         });
@@ -95,7 +87,6 @@ export default class ResultsScene extends Phaser.Scene {
             else this.showProgress();
         });
 
-        // Botones (a la derecha de la tarjeta)
         this.time.delayedCall(after + 700, () => {
             this.list = new MenuList(this, width - 140, height / 2 + 70, [
                 { label: () => 'RETRY', action: () => this.exit(() => this.game_.restartLevel()) },
@@ -105,7 +96,6 @@ export default class ResultsScene extends Phaser.Scene {
             this.input.keyboard.on('keydown-ESC', () => this.exit(() => this.game_.quitToMenu()));
         });
 
-        // La tarjeta cae girando y "aterriza" sobre la pantalla
         const cardY = card.y;
         card.setY(-260).setAngle(-14);
         this.tweens.add({
@@ -119,13 +109,11 @@ export default class ResultsScene extends Phaser.Scene {
     }
 
     countRow(row) {
-        // La fila entra deslizándose desde la izquierda
         for (const text of [row.left, row.right]) {
             const x = text.x;
             text.setX(x - 30).setAlpha(0);
             this.tweens.add({ targets: text, x, alpha: 1, duration: 220, ease: 'Quad.Out' });
         }
-        // El valor da un saltito al terminar de contar
         this.time.delayedCall(320, () => {
             this.tweens.add({ targets: row.right, scale: 1.25, duration: 90, yoyo: true, ease: 'Quad.Out' });
         });
@@ -142,12 +130,10 @@ export default class ResultsScene extends Phaser.Scene {
         });
     }
 
-    // La nota cae desde grande, como un sello, y la pantalla tiembla
     showGrade() {
         const grade = computeGrade(this.result);
-        const { width, height } = this.scale;
+        const { width } = this.scale;
 
-        // Guardar la mejor nota (orden de GRADES)
         const bestGrade = load('bestGrade', null);
         if (!bestGrade || GRADES.indexOf(grade) > GRADES.indexOf(bestGrade)) save('bestGrade', grade);
 
@@ -177,7 +163,6 @@ export default class ResultsScene extends Phaser.Scene {
         });
     }
 
-    // Barra con el perrito marcando hasta dónde llegaste
     showProgress() {
         const barWidth = 400;
         const y = 182;

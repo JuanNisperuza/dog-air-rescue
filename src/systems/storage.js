@@ -1,4 +1,4 @@
-// localStorage puede fallar (modo incógnito, almacenamiento bloqueado), por eso el try/catch.
+// localStorage can fail (private mode, blocked storage), hence the try/catch.
 const PREFIX = 'dog-air-rescue:';
 
 export function load(key, fallback) {
@@ -14,6 +14,5 @@ export function save(key, value) {
     try {
         localStorage.setItem(PREFIX + key, JSON.stringify(value));
     } catch {
-        // Sin almacenamiento simplemente no se guarda
     }
 }

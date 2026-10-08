@@ -2,15 +2,13 @@ import Phaser from 'phaser';
 import { PLAYER, COMBO, POWERUPS, BOSS } from '../config/constants.js';
 import TouchControls from '../systems/TouchControls.js';
 
-// HUD. Corre encima de GameScene y escucha el registry: vidas, puntaje, combo,
-// súper, power-ups, vida del jefe y los avisos grandes ("READY?", "WARNING!"...).
 const FONT = 'Arial Black, Arial, sans-serif';
-const PUNCH_DECAY = 6;          // qué tan rápido vuelve a su tamaño el "salto" del puntaje
+const PUNCH_DECAY = 6;
 const HEART_SPACING = 36;
 const COMBO_COLORS = ['#ffffff', '#ffd54f', '#ffab40', '#ff7043', '#ff4081'];
 const METER_WIDTH = 110;
 const BOSS_BAR_WIDTH = 420;
-const ICON_SCALE = 0.38;        // íconos de power-ups en el HUD
+const ICON_SCALE = 0.38;
 
 export default class UIScene extends Phaser.Scene {
     constructor() {
@@ -21,17 +19,14 @@ export default class UIScene extends Phaser.Scene {
         const { width, height } = this.scale;
         this.game_ = this.scene.get('GameScene');
 
-        // Bordes rojos con una sola vida (debajo de todo el HUD)
         this.vignette = this.add.image(0, 0, 'vignette').setOrigin(0).setAlpha(0);
 
-        // Corazones
         this.hearts = [];
         for (let i = 0; i < PLAYER.maxHp; i++) {
             this.hearts.push(this.add.image(30 + i * HEART_SPACING, 30, 'heart'));
         }
         this.hp = PLAYER.maxHp;
 
-        // Contador de perritos rescatados (a la derecha de los corazones)
         this.pupScale = 34 / this.textures.getFrame('fx', 'pup_happy_0001').realHeight;
         this.pupIcon = this.add.sprite(30 + PLAYER.maxHp * HEART_SPACING + 8, 30, 'fx', 'pup_happy_0001')
             .setScale(this.pupScale);
@@ -40,7 +35,6 @@ export default class UIScene extends Phaser.Scene {
         }).setOrigin(0, 0.5);
         this.rescued = 0;
 
-        // Pedacitos que salen cuando se rompe un corazón
         this.heartBits = this.add.particles(0, 0, 'particle', {
             speed: { min: 80, max: 200 },
             lifespan: 500,
@@ -50,7 +44,6 @@ export default class UIScene extends Phaser.Scene {
             emitting: false
         });
 
-        // Medidor del súper
         const superLabel = this.add.text(14, 50, 'SUPER', {
             fontFamily: FONT, fontSize: '13px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
         });
@@ -63,19 +56,16 @@ export default class UIScene extends Phaser.Scene {
         }).setOrigin(0, 0.5).setVisible(false);
         this.superValue = 0;
 
-        // Power-up activo (icono + tiempo que le queda) y escudo
         this.powerIcon = this.add.image(30, 92, 'fx', 'pu_spread').setScale(ICON_SCALE).setVisible(false);
         this.powerBarBg = this.add.rectangle(50, 92, 64, 8, 0x000000, 0.55).setOrigin(0, 0.5).setVisible(false);
         this.powerBar = this.add.rectangle(51, 92, 62, 5, 0xffffff).setOrigin(0, 0.5).setVisible(false);
         this.shieldIcon = this.add.image(132, 92, 'fx', 'pu_shield').setScale(ICON_SCALE).setVisible(false);
 
-        // Puntaje
         this.scoreText = this.add.text(width - 16, 12, '', {
             fontFamily: FONT, fontSize: '26px', color: '#ffffff', stroke: '#000000', strokeThickness: 6
         }).setOrigin(1, 0);
         this.scorePunch = 0;
 
-        // Combo: "x2" grande, "COMBO 7" chico y una barra con el tiempo que queda
         this.comboGroup = this.add.container(width - 16, 52).setAlpha(0);
         this.comboMult = this.add.text(0, 0, '', {
             fontFamily: FONT, fontSize: '34px', color: '#ffffff', stroke: '#000000', strokeThickness: 7
@@ -89,7 +79,6 @@ export default class UIScene extends Phaser.Scene {
         this.comboPunch = 0;
         this.comboVisible = false;
 
-        // Barra del jefe (abajo al centro), con marcas donde cambia de fase
         this.bossGroup = this.add.container(width / 2, height - 30).setVisible(false);
         const bossName = this.add.text(0, -22, BOSS.name, {
             fontFamily: FONT, fontSize: '16px', color: '#ffffff', stroke: '#000000', strokeThickness: 5
@@ -100,19 +89,16 @@ export default class UIScene extends Phaser.Scene {
         const notches = BOSS.phases.map((p) =>
             this.add.rectangle(-BOSS_BAR_WIDTH / 2 + BOSS_BAR_WIDTH * p, 0, 3, 16, 0x000000));
         this.bossGroup.add([bossName, bossBg, this.bossTrail, this.bossBar, ...notches]);
-        this.bossShown = 0;     // lo que se dibuja (persigue a la vida real)
+        this.bossShown = 0;
         this.bossTrailShown = 0;
 
-        // Aviso grande en el centro
         this.bannerText = this.add.text(width / 2, height / 2 - 40, '', {
             fontFamily: FONT, fontSize: '80px', color: '#ffffff', stroke: '#2b1d14', strokeThickness: 14
         }).setOrigin(0.5).setShadow(6, 6, '#00000066', 0, true, true).setVisible(false);
 
-        // Barras de cine (encima de todo el HUD)
         this.barTop = this.add.rectangle(0, 0, width, 70, 0x000000).setOrigin(0, 0).setDepth(50).setScale(1, 0);
         this.barBottom = this.add.rectangle(0, height, width, 70, 0x000000).setOrigin(0, 1).setDepth(50).setScale(1, 0);
 
-        // Estela de lo que vuela al HUD
         this.trail = this.add.particles(0, 0, 'particle', {
             lifespan: 350,
             scale: { start: 0.9, end: 0 },
@@ -125,7 +111,7 @@ export default class UIScene extends Phaser.Scene {
         this.touch = new TouchControls(this);
 
         this.score = this.registry.get('score');
-        this.shownScore = this.score;      // lo que se muestra; "rueda" hasta el valor real
+        this.shownScore = this.score;
         this.scoreText.setText('SCORE ' + this.score);
         this.scorePunch = 0;
         this.superWasReady = false;
@@ -146,7 +132,7 @@ export default class UIScene extends Phaser.Scene {
         };
         for (const [event, fn] of Object.entries(listeners)) this.registry.events.on(event, fn, this);
 
-        // Sin esto, al reiniciar se acumulan listeners duplicados
+        // Without this, restarting stacks duplicate listeners
         this.events.once('shutdown', () => {
             for (const [event, fn] of Object.entries(listeners)) this.registry.events.off(event, fn, this);
         });
@@ -156,7 +142,6 @@ export default class UIScene extends Phaser.Scene {
         const dt = delta / 1000;
         const playing = this.registry.get('playing');
 
-        // Los corazones laten; con una sola vida, el último late rápido y fuerte
         this.hearts.forEach((heart, i) => {
             if (heart.breaking) return;
             if (i >= this.hp) {
@@ -169,13 +154,11 @@ export default class UIScene extends Phaser.Scene {
             heart.setScale(1 + beat * beat * (danger ? 0.3 : 0.1));
         });
 
-        // Bordes rojos que laten con el último corazón
         const danger = this.hp === 1 && playing;
         const targetAlpha = danger ? 0.35 + Math.max(0, Math.sin(time * 0.012)) * 0.35 : 0;
         this.vignette.setAlpha(Phaser.Math.Linear(this.vignette.alpha, targetAlpha, 0.15));
 
         if (this.shownScore !== this.score) {
-            // Sube rápido pero se alcanza a ver contar
             const step = Math.max(1, Math.ceil((this.score - this.shownScore) * 0.2));
             this.shownScore = Math.min(this.score, this.shownScore + step);
             this.scoreText.setText('SCORE ' + this.shownScore);
@@ -210,7 +193,6 @@ export default class UIScene extends Phaser.Scene {
         this.superWasReady = ready;
         this.superHint.setVisible(ready && this.registry.get('playing') && !this.touch.state.enabled);
         if (ready) {
-            // Parpadea entre dorado y blanco cuando está listo
             const flash = Math.sin(time * 0.015) > 0;
             this.superBar.setFillStyle(flash ? 0xffffff : 0xffd54f);
             this.superHint.setScale(1 + Math.max(0, Math.sin(time * 0.015)) * 0.25);
@@ -224,7 +206,6 @@ export default class UIScene extends Phaser.Scene {
         if (!this.powerIcon.visible) return;
         const left = this.registry.get('powerUntil') - this.game_.now;
         this.powerBar.setSize(Math.max(1, 62 * Phaser.Math.Clamp(left / POWERUPS.duration, 0, 1)), 5);
-        // Parpadea cuando está por acabarse
         this.powerIcon.setAlpha(left < 2000 && Math.floor(left / 150) % 2 ? 0.3 : 1);
     }
 
@@ -241,14 +222,12 @@ export default class UIScene extends Phaser.Scene {
             return;
         }
         if (!this.bossGroup.visible) {
-            // Aparece llenándose de golpe
             const y = this.scale.height - 30;
             this.bossGroup.setVisible(true).setAlpha(1).setY(y + 80);
             this.tweens.add({ targets: this.bossGroup, y, duration: 500, ease: 'Back.Out' });
             this.bossShown = 0;
             this.bossTrailShown = 1;
         }
-        // La barra roja persigue rápido; la blanca de atrás se queda un poco (se ve el daño)
         this.bossShown = Phaser.Math.Linear(this.bossShown, hp, 0.2);
         this.bossTrailShown = this.bossTrailShown > hp ? Phaser.Math.Linear(this.bossTrailShown, hp, 0.04) : this.bossShown;
         this.bossBar.setSize(Math.max(0.01, BOSS_BAR_WIDTH * this.bossShown), 12);
@@ -269,7 +248,6 @@ export default class UIScene extends Phaser.Scene {
         });
     }
 
-    // El corazón se infla, se pone blanco, suelta pedacitos y queda vacío
     breakHeart(heart) {
         heart.breaking = true;
         heart.setTintFill(0xffffff);
@@ -294,7 +272,6 @@ export default class UIScene extends Phaser.Scene {
         });
     }
 
-    // Vida recuperada (perrito rescatado): el corazón vuelve con un "pop"
     refillHeart(heart) {
         heart.breaking = true;
         heart.setTexture('heart').setScale(0);
@@ -309,14 +286,13 @@ export default class UIScene extends Phaser.Scene {
 
     onScoreChanged(parent, value) {
         this.score = value;
-        if (value < this.shownScore) this.shownScore = value; // reinicio
+        if (value < this.shownScore) this.shownScore = value;
         this.scorePunch = 1;
     }
 
-    // El HUD entra al empezar: corazones uno por uno, puntaje desde arriba, barra desde la izquierda
     playIntro() {
         this.hearts.forEach((heart, i) => {
-            heart.breaking = true; // que el latido no pise la animación
+            heart.breaking = true;
             heart.setScale(0);
             this.tweens.add({
                 targets: heart,
@@ -339,7 +315,6 @@ export default class UIScene extends Phaser.Scene {
         }
     }
 
-    // Aviso cuando el súper se llena
     superReadyBurst() {
         const text = this.add.text(70 + METER_WIDTH / 2, 59, 'SUPER READY!', {
             fontFamily: FONT, fontSize: '18px', color: '#ffd54f', stroke: '#000000', strokeThickness: 5
@@ -347,7 +322,6 @@ export default class UIScene extends Phaser.Scene {
         this.tweens.add({ targets: text, scale: 1.2, y: 84, duration: 300, ease: 'Back.Out' });
         this.tweens.add({ targets: text, alpha: 0, y: 70, delay: 900, duration: 400, onComplete: () => text.destroy() });
 
-        // Brillo que recorre la barra
         this.superShine.setX(68).setAlpha(0.9).setVisible(true);
         this.tweens.add({
             targets: this.superShine, x: 68 + METER_WIDTH, alpha: 0, duration: 450, ease: 'Quad.In',
@@ -374,12 +348,10 @@ export default class UIScene extends Phaser.Scene {
         this.comboBar.setFillStyle(Phaser.Display.Color.HexStringToColor(color).color);
         this.comboPunch = 1;
 
-        // Cada muerte sacude un poco el número
         this.comboMult.setAngle(Phaser.Math.Between(-12, 12));
         this.tweens.add({ targets: this.comboMult, angle: 0, duration: 250, ease: 'Back.Out' });
 
         if (!this.comboVisible) {
-            // Entra deslizándose desde la derecha
             this.comboVisible = true;
             this.tweens.killTweensOf(this.comboGroup);
             this.comboGroup.setAlpha(1).setX(this.scale.width + 120);
@@ -387,7 +359,6 @@ export default class UIScene extends Phaser.Scene {
         }
     }
 
-    // Felicitación al subir el multiplicador
     praise(multiplier, color) {
         const words = ['', '', 'NICE!', 'GREAT!', 'AWESOME!', 'PAWSOME!'];
         const text = this.add.text(this.scale.width - 130, 150, words[multiplier], {
@@ -424,7 +395,6 @@ export default class UIScene extends Phaser.Scene {
         }
     }
 
-    // Texto grande que entra con un "pop", se queda un momento y se va
     onBanner(parent, banner) {
         if (!banner) return;
         const text = this.bannerText;
@@ -441,7 +411,6 @@ export default class UIScene extends Phaser.Scene {
         });
     }
 
-    // Barras negras arriba y abajo (entrada del jefe, cámara lenta)
     onCinema(parent, on) {
         this.tweens.killTweensOf([this.barTop, this.barBottom]);
         this.tweens.add({
@@ -452,7 +421,6 @@ export default class UIScene extends Phaser.Scene {
         });
     }
 
-    // Tarjeta con el nombre del jefe: entra por la izquierda, se queda y sale por la derecha
     onTitleCard(parent, card) {
         if (!card) return;
         const { width, height } = this.scale;
@@ -478,18 +446,16 @@ export default class UIScene extends Phaser.Scene {
             onComplete: () => group.destroy()
         });
 
-        // Las letras del nombre aparecen una por una (efecto máquina de escribir)
         const full = card.name;
         const step = Math.min(35, 500 / full.length);
         name.setText('');
         for (let i = 1; i <= full.length; i++) {
             this.time.delayedCall(200 + i * step, () => {
-                if (name.scene) name.setText(full.slice(0, i)); // por si la tarjeta ya se fue
+                if (name.scene) name.setText(full.slice(0, i));
             });
         }
     }
 
-    // Lo recogido vuela en curva hasta su lugar en el HUD, dejando una estela
     onCollect(parent, item) {
         if (!item) return;
         const isPuppy = item.kind === 'puppy';
@@ -499,7 +465,6 @@ export default class UIScene extends Phaser.Scene {
             : item.kind === 'shield' ? this.shieldIcon
             : this.powerIcon;
 
-        // El perrito vuela feliz (animado); los power-ups, como insignia
         const flyer = isPuppy
             ? this.add.sprite(item.x, item.y, 'fx', 'pup_happy_0001').play('pup_happy').setScale(this.pupScale * 1.8)
             : this.add.image(item.x, item.y, 'fx', `pu_${item.kind}`).setScale(0.8);
@@ -516,7 +481,6 @@ export default class UIScene extends Phaser.Scene {
         const point = new Phaser.Math.Vector2();
         const progress = { t: 0 };
 
-        // Primero da un saltito en su lugar, después sale volando
         this.tweens.add({ targets: flyer, scale: startScale * 1.4, duration: 120, yoyo: true });
         this.tweens.add({
             targets: progress,
@@ -543,7 +507,6 @@ export default class UIScene extends Phaser.Scene {
                     this.tweens.add({ targets: target, scale: endScale, duration: 350, ease: 'Back.Out' });
                 }
                 if (isPuppy) {
-                    // El perrito del contador celebra un momento
                     this.pupIcon.play('pup_happy');
                     this.time.delayedCall(1200, () => this.pupIcon.stop().setFrame('pup_happy_0001'));
                     this.rescued++;

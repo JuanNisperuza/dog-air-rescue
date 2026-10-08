@@ -23,13 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# Archivos de trabajo
-Claude outputs/
-
-# Frames intermedios: se regeneran con `npm run slice`
+# Intermediate frames: regenerated with `npm run slice`
 art/frames/
 
-# Arte de Cuphead (StudioMDHR): solo para práctica local, no se publica
+# Cuphead art (StudioMDHR): local practice only, not published
 Cuphead (Shmup)/
 art/frames/cuphead/
 public/assets/atlas/cuphead_plane.*

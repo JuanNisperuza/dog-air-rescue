@@ -18,18 +18,17 @@ const config = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { x: 0, y: 0 }, // es un avión: sin gravedad
+            gravity: { x: 0, y: 0 },
             debug: DEBUG
         }
     },
     scale: {
-        mode: Phaser.Scale.FIT,             // se ajusta al tamaño de la ventana
+        mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
     pipeline: { OldFilm: OldFilmPipeline },
-    input: { activePointers: 3 },           // varios dedos a la vez en celular
-    // La primera escena arranca sola; las demás se lanzan desde código.
-    // El orden es el orden de dibujo: TransitionScene va al final para quedar encima de todo.
+    input: { activePointers: 3 },
+    // Order is draw order: TransitionScene goes last so it sits on top of everything.
     scene: [BootScene, MenuScene, GameScene, UIScene, PauseScene, ResultsScene, OptionsScene, TransitionScene]
 };
 

@@ -8,7 +8,6 @@ import ParallaxBackground from '../systems/ParallaxBackground.js';
 import { applyFilm } from '../systems/OldFilmPipeline.js';
 import { irisIn, irisOut } from './TransitionScene.js';
 
-// Menú principal. Se navega con las flechas + Enter/Espacio/X o con el mouse.
 const TEXT = {
     title: 'DOG AIR RESCUE',
     subtitle: 'a tiny shoot \'em up',
@@ -41,7 +40,6 @@ export default class MenuScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.scale;
-        // Por si venimos de una partida
         for (const key of ['UIScene', 'PauseScene', 'ResultsScene', 'OptionsScene']) this.scene.stop(key);
 
         this.sfx = new Sfx(this);
@@ -49,11 +47,9 @@ export default class MenuScene extends Phaser.Scene {
         this.music.play();
         this.music.restore();
 
-        // Fondo
         this.background = new ParallaxBackground(this);
         applyFilm(this);
 
-        // Personaje volando
         const skinKey = PLAYER.skin;
         const skin = SKINS[skinKey];
         this.hero = this.add.sprite(250, height / 2 + 40, skin.atlas, this.anims.get(`${skinKey}_idle_straight`).frames[0].frame.name)
@@ -62,11 +58,9 @@ export default class MenuScene extends Phaser.Scene {
         this.hero.setOrigin(skin.canvasCenter.x / this.hero.width, skin.canvasCenter.y / this.hero.height);
         this.heroBaseY = this.hero.y;
 
-        // Entra volando desde la izquierda
         this.hero.setX(-160);
         this.tweens.add({ targets: this.hero, x: 250, duration: 1100, delay: 200, ease: 'Back.Out' });
 
-        // Humo del motor también en el menú
         const exhaust = skin.exhaust;
         const smoke = this.add.particles(0, 0, 'fx', {
             frame: ['fx_puff_0001', 'fx_puff_0002', 'fx_puff_0003'],
@@ -82,7 +76,6 @@ export default class MenuScene extends Phaser.Scene {
         smoke.startFollow(this.hero, exhaust.x * 1.1, exhaust.y * 1.1);
         this.children.moveBelow(smoke, this.hero);
 
-        // Título: cada letra cae por separado y después ondulan como una bandera
         this.createTitle(width / 2, 95);
 
         const subtitle = this.add.text(width / 2, 160, TEXT.subtitle, {
@@ -94,7 +87,6 @@ export default class MenuScene extends Phaser.Scene {
         }).setOrigin(0.5).setAlpha(0);
         this.tweens.add({ targets: subtitle, alpha: 1, y: { from: 175, to: 160 }, duration: 400, delay: 1100 });
 
-        // Botones
         this.buttons = [
             { label: () => TEXT.play, action: () => this.startGame() },
             { label: () => TEXT.howTo, action: () => this.showHowTo() },
@@ -114,7 +106,6 @@ export default class MenuScene extends Phaser.Scene {
             button.text.on('pointerover', () => this.select(i));
             button.text.on('pointerdown', () => this.activate());
 
-            // Entran desde la derecha, una tras otra
             button.text.setX(width + 150);
             this.tweens.add({ targets: button.text, x: menuX, duration: 500, delay: 700 + i * 110, ease: 'Back.Out' });
         });
@@ -124,7 +115,6 @@ export default class MenuScene extends Phaser.Scene {
         }).setOrigin(0.5).setAlpha(0);
         this.tweens.add({ targets: this.cursor, alpha: 1, duration: 200, delay: 1200 });
 
-        // Pie
         const best = load('best', 0);
         const grade = load('bestGrade', null);
         const record = grade ? `${TEXT.best} ${best}   ${TEXT.grade} ${grade}` : `${TEXT.best} ${best}`;
@@ -143,7 +133,6 @@ export default class MenuScene extends Phaser.Scene {
 
         this.createHowToPanel();
 
-        // Teclado
         this.selected = 0;
         this.pressing = false;
         this.select(0, true);
@@ -151,12 +140,10 @@ export default class MenuScene extends Phaser.Scene {
 
         this.input.keyboard.on('keydown', this.onKey, this);
 
-        // Recordar si se juega con el dedo (el HUD muestra los controles táctiles)
         this.input.on('pointerdown', (pointer) => {
             if (pointer.wasTouch) this.registry.set('touchMode', true);
         });
 
-        // Cada tanto el perrito hace un rizo
         this.heroX = 250;
         this.loop = { t: 0 };
         this.time.addEvent({
@@ -180,7 +167,6 @@ export default class MenuScene extends Phaser.Scene {
         this.hero.y = this.heroBaseY + Math.sin(time * 0.002) * 14;
         this.hero.angle = Math.cos(time * 0.002) * 4;
 
-        // Rizo: da una vuelta completa en el aire
         if (this.loop.t > 0 && this.loop.t < 1) {
             const theta = this.loop.t * Math.PI * 2;
             this.hero.x = this.heroX + Math.sin(theta) * 75;
@@ -188,12 +174,10 @@ export default class MenuScene extends Phaser.Scene {
             this.hero.angle = -Phaser.Math.RadToDeg(theta);
         }
 
-        // Las letras del título ondulan (cuando ya cayeron)
         for (const letter of this.letters) {
             if (letter.landed) letter.y = Math.sin(time * 0.004 - letter.index * 0.45) * 5;
         }
 
-        // El botón elegido se mece un poquito
         const current = this.buttons[this.selected].text;
         if (!this.pressing) current.angle = Math.sin(time * 0.005) * 2.5;
 
@@ -238,7 +222,6 @@ export default class MenuScene extends Phaser.Scene {
             const isSelected = i === index;
             button.text.setColor(isSelected ? COLOR_SELECTED : COLOR_IDLE);
             if (!isSelected) button.text.setAngle(0);
-            // Solo se corta el tween de escala, así no se interrumpe la entrada
             button.scaleTween?.stop();
             button.scaleTween = this.tweens.add({
                 targets: button.text,
@@ -248,7 +231,6 @@ export default class MenuScene extends Phaser.Scene {
             });
         });
 
-        // El cursor salta a la nueva opción
         if (!silent) {
             this.cursor.setScale(1.6);
             this.tweens.add({ targets: this.cursor, scale: 1, duration: 200, ease: 'Back.Out' });
@@ -261,7 +243,6 @@ export default class MenuScene extends Phaser.Scene {
         if (this.transitioning || this.panel.visible || this.pressing) return;
         const button = this.buttons[this.selected];
 
-        // Aplastón de caricatura y después la acción
         this.pressing = true;
         button.scaleTween?.stop();
         button.text.setAngle(0);
@@ -277,7 +258,6 @@ export default class MenuScene extends Phaser.Scene {
         button.action();
     }
 
-    // Cada letra es un texto aparte para poder animarla sola
     createTitle(x, y) {
         const style = { fontFamily: FONT, fontSize: '72px', color: '#ffd54f', stroke: '#4e342e', strokeThickness: 12 };
         this.titleGroup = this.add.container(x, y);
@@ -292,17 +272,15 @@ export default class MenuScene extends Phaser.Scene {
             }
             const letter = this.add.text(cursorX, 0, char, style).setOrigin(0, 0.5)
                 .setShadow(6, 6, '#00000055', 0, true, true);
-            cursorX += letter.width - 12; // el borde grueso se monta un poco
+            cursorX += letter.width - 12;
             letter.index = this.letters.length;
             this.letters.push(letter);
             this.titleGroup.add(letter);
         });
 
-        // Centrar
         const total = cursorX + 12;
         for (const letter of this.letters) letter.x -= total / 2;
 
-        // Caen una por una con rebote
         this.letters.forEach((letter, i) => {
             letter.y = -220;
             letter.setAngle(Phaser.Math.Between(-30, 30));
@@ -317,7 +295,6 @@ export default class MenuScene extends Phaser.Scene {
             });
         });
 
-        // Todo el título se balancea suave
         this.tweens.add({
             targets: this.titleGroup,
             scale: 1.04,
@@ -333,15 +310,13 @@ export default class MenuScene extends Phaser.Scene {
         this.transitioning = true;
         this.sfx.uiSelect();
 
-        // En celular, pantalla completa (tiene que pedirse justo después de un toque)
         if (this.registry.get('touchMode') && !this.scale.isFullscreen) {
-            try { this.scale.startFullscreen(); } catch { /* algunos navegadores no dejan */ }
+            try { this.scale.startFullscreen(); } catch { }
         }
 
         this.background.sun.setMood('cheer');
         if (SKINS[PLAYER.skin].anims.happy) this.hero.play(`${PLAYER.skin}_happy`);
 
-        // El perrito da un saltito y el iris se cierra sobre él
         this.tweens.add({ targets: this.hero, scale: 1.5, duration: 160, yoyo: true, ease: 'Quad.Out' });
         irisOut(this, this.hero.x, this.hero.y, () => this.scene.start('GameScene'));
     }
@@ -349,15 +324,13 @@ export default class MenuScene extends Phaser.Scene {
     toggleMute() {
         const muted = this.sfx.toggleMute();
         this.music.setMuted(muted);
-        this.sfx.uiSelect(); // si quedó en silencio, no suena (y está bien)
+        this.sfx.uiSelect();
     }
 
     showOptions() {
         this.sfx.uiSelect();
         this.scene.launch('OptionsScene', { from: 'MenuScene' });
     }
-
-    // Panel "how to play"
 
     createHowToPanel() {
         const { width, height } = this.scale;
@@ -399,7 +372,6 @@ export default class MenuScene extends Phaser.Scene {
         this.panel.setVisible(true).setScale(0.85).setAlpha(0);
         this.tweens.add({ targets: this.panel, scale: 1, alpha: 1, duration: 180, ease: 'Back.Out' });
 
-        // Las filas de controles aparecen una tras otra
         this.howToRows.forEach((text, i) => {
             const x = text.baseX;
             text.setAlpha(0).setX(x + (text.originX === 0 ? -30 : 30));

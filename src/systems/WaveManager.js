@@ -2,10 +2,7 @@ import Phaser from 'phaser';
 import { WAVES, DEBUG } from '../config/constants.js';
 import { WAVE_LIST } from '../config/waves.js';
 
-// Genera las oleadas. Al empezar una, convierte sus grupos en una cola de apariciones
-// ordenada por tiempo y en cada frame saca las que ya tocan. Cuando termina la última
-// avisa con onComplete (ahí GameScene trae al jefe).
-const SPAWN_MARGIN = 60; // px a la derecha de la pantalla donde aparecen
+const SPAWN_MARGIN = 60;
 
 export default class WaveManager {
     constructor(scene, enemies, onComplete) {
@@ -16,7 +13,6 @@ export default class WaveManager {
         this.waveIndex = -1;
         this.total = WAVE_LIST.length;
 
-        // Multiplicadores de dificultad, compartidos por todos los enemigos
         this.difficulty = { hp: 1, speed: 1, fireRate: 1 };
 
         this.queue = [];
@@ -26,7 +22,6 @@ export default class WaveManager {
         this.nextWaveAt = scene.now + WAVES.firstDelay;
     }
 
-    // Cuántas oleadas se terminaron, de 0 a 1 (para la barra de progreso)
     get progress() {
         const done = this.state === 'done' ? this.total : Math.max(0, this.waveIndex);
         return done / this.total;
@@ -44,7 +39,6 @@ export default class WaveManager {
             this.queueIndex++;
         }
 
-        // Terminó la oleada: ya salieron todos y no queda ninguno vivo
         if (this.queueIndex >= this.queue.length && this.enemies.countActive() === 0) {
             if (this.waveIndex >= this.total - 1) {
                 this.state = 'done';
@@ -72,11 +66,9 @@ export default class WaveManager {
 
         this.state = 'running';
 
-        // Las oleadas no se muestran al jugador; con DEBUG salen en consola
         if (DEBUG) console.log(`[Wave ${this.waveIndex + 1}/${this.total}] ${wave.name}`);
     }
 
-    // Convierte un grupo (formación) en apariciones individuales
     expandFormation(group, now) {
         const { width, height } = this.scene.scale;
         const count = group.count ?? 1;
@@ -91,20 +83,20 @@ export default class WaveManager {
             let at = start;
 
             switch (group.formation) {
-                case 'line':      // fila india: misma altura, uno tras otro
+                case 'line':
                     at = start + i * (group.interval ?? 350);
                     break;
 
-                case 'column':    // todos a la vez, apilados
+                case 'column':
                     y = baseY + (i - mid) * (group.spacing ?? 80);
                     break;
 
-                case 'v':         // V: el del medio va adelante
+                case 'v':
                     x = baseX + Math.abs(i - mid) * (group.gapX ?? 55);
                     y = baseY + (i - mid) * (group.gapY ?? 50);
                     break;
 
-                case 'random':    // alturas al azar, uno tras otro
+                case 'random':
                     at = start + i * (group.interval ?? 400);
                     y = Phaser.Math.FloatBetween(0.12, 0.88) * height;
                     break;

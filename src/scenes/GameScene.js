@@ -21,8 +21,6 @@ const EXPLOSION_POOL_SIZE = 20;
 const PICKUP_POOL_SIZE = 8;
 const NO_DIFFICULTY = { hp: 1, speed: 1, fireRate: 1 };
 
-// El nivel jugable: crea todo, conecta las colisiones, le deja las oleadas al
-// WaveManager y al final trae al jefe. Al ganar o perder abre ResultsScene.
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super('GameScene');
@@ -31,55 +29,48 @@ export default class GameScene extends Phaser.Scene {
     create() {
         const { height } = this.scale;
 
-        // Reloj propio: a diferencia de time.now, no avanza mientras el juego está en pausa
+        // Own clock: unlike time.now, it does not advance while the game is paused
         this.now = 0;
         const tick = (time, delta) => { this.now += delta; };
         this.events.on('preupdate', tick);
 
-        // Por si venimos de un reinicio
         this.scene.stop('PauseScene');
         this.scene.stop('ResultsScene');
 
-        // Fondo con parallax y filtro de película vieja
         this.background = new ParallaxBackground(this);
         applyFilm(this);
 
-        // La cámara no puede salirse del fondo (importa en los zooms de cine)
         const m = PARALLAX.margin;
         this.cameras.main.setBounds(-m, -m, this.scale.width + m * 2, this.scale.height + m * 2);
         this.registry.set('cinema', false);
 
-        // Estado global que lee el HUD
         this.registry.set('score', 0);
         this.registry.set('hp', PLAYER.maxHp);
         this.registry.set('super', 0);
         this.registry.set('power', null);
         this.registry.set('shield', false);
-        this.registry.set('bossHp', -1);     // -1 = no hay jefe
+        this.registry.set('bossHp', -1);
         this.registry.set('playing', true);
-        // Eventos para el HUD: tienen que existir antes, porque la primera vez que se
-        // crea una clave el registry emite 'setdata' y no 'changedata'
+        // HUD events: these keys must exist beforehand, because the first time a key
+        // is created the registry emits 'setdata' instead of 'changedata'
         for (const key of ['banner', 'titleCard', 'collect']) this.registry.set(key, null);
 
-        // Datos para la pantalla de resultados
         this.stats = { kills: 0, rescued: 0, puppies: 0, supers: 0 };
 
-        // Sonido y efectos
         this.sfx = new Sfx(this);
         this.fx = new Effects(this, this.sfx);
         this.music = getMusic();
         this.music.play();
-        this.music.restore(); // al reiniciar, vuelve a su volumen
+        this.music.restore();
         this.input.keyboard.on('keydown-M', () => {
             const muted = this.sfx.toggleMute();
             this.music.setMuted(muted);
         });
 
-        // Pools
         this.bullets = this.physics.add.group({
             classType: Bullet,
             maxSize: BULLET.poolSize,
-            runChildUpdate: true // llama update() de cada objeto activo
+            runChildUpdate: true
         });
         this.enemies = this.physics.add.group({
             classType: Enemy,
@@ -102,14 +93,12 @@ export default class GameScene extends Phaser.Scene {
             runChildUpdate: true
         });
 
-        // Crear todo de una vez al inicio para que no haya tirones a mitad de partida
         this.prewarm(this.bullets, 'fx', BULLET.poolSize);
         this.prewarm(this.enemies, 'enemies', ENEMY.poolSize);
         this.prewarm(this.enemyBullets, 'fx', ENEMY_BULLET.poolSize);
         this.prewarm(this.explosions, 'fx', EXPLOSION_POOL_SIZE);
         this.prewarm(this.pickups, 'fx', PICKUP_POOL_SIZE);
 
-        // Jugador
         this.player = new Player(this, 150, height / 2, this.bullets);
         this.player.on('died', this.gameOver, this);
         this.player.on('shoot', (x, y) => this.fx.playerShoot(x, y));
@@ -121,35 +110,30 @@ export default class GameScene extends Phaser.Scene {
         this.superMeter = 0;
         this.boss = null;
 
-        // Colisiones (overlap: detecta el contacto sin empujar)
         this.physics.add.overlap(this.bullets, this.enemies, this.onBulletHitsEnemy, null, this);
         this.physics.add.overlap(this.player, this.enemies, this.onEnemyHitsPlayer, null, this);
         this.physics.add.overlap(this.player, this.enemyBullets, this.onEnemyBulletHitsPlayer, null, this);
         this.physics.add.overlap(this.player, this.pickups, this.onPickup, null, this);
 
-        // Oleadas; al terminar la última llega el jefe
         this.waves = new WaveManager(this, this.enemies, () => {
             this.time.delayedCall(WAVES.bossDelay, () => this.startBoss());
         });
 
-        // Hud
         this.isGameOver = false;
         this.won = false;
         this.bossIncoming = false;
-        this.leaving = false; // la escena se reutiliza: hay que reiniciar este flag
-        this.scene.launch('UIScene'); // corre EN PARALELO, encima del juego
+        this.leaving = false; // the scene is reused, so this flag must be reset
+        this.scene.launch('UIScene');
 
-        // Pausa: Esc / P, o solo al cambiar de ventana
         this.input.keyboard.on('keydown-ESC', () => this.pauseGame());
         this.input.keyboard.on('keydown-P', () => this.pauseGame());
         const onBlur = () => this.pauseGame();
         this.game.events.on('blur', onBlur);
 
-        // Al volver de la pausa la música regresa a su volumen
         const onResume = () => this.music.restore(1, 300);
         this.events.on('resume', onResume);
 
-        // Los eventos de la escena sobreviven al reinicio: hay que quitarlos a mano
+        // Scene events survive a restart and must be removed by hand
         this.events.once('shutdown', () => {
             this.game.events.off('blur', onBlur);
             this.events.off('preupdate', tick);
@@ -174,7 +158,6 @@ export default class GameScene extends Phaser.Scene {
         this.updateSun();
     }
 
-    // El sol mira al perrito y pone cara según lo que pasa
     updateSun() {
         const sun = this.background.sun;
         sun.lookAt(this.player.x, this.player.y);
@@ -192,14 +175,10 @@ export default class GameScene extends Phaser.Scene {
         group.getChildren().forEach((child) => child.kill());
     }
 
-    // Texto grande en el centro de la pantalla (lo dibuja UIScene)
     banner(text, color) {
         this.registry.set('banner', { text, color, id: Math.random() });
     }
 
-    // Api para los enemigos y el jefe
-
-    // En grados
     angleToPlayer(x, y) {
         if (!this.player.active) return 180;
         return Phaser.Math.RadToDeg(Phaser.Math.Angle.Between(x, y, this.player.x, this.player.y));
@@ -214,7 +193,6 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    // Enemigo suelto (los que llama el jefe)
     spawnMinion(type, y) {
         const x = this.scale.width + 60;
         const enemy = this.enemies.get(x, y);
@@ -233,8 +211,6 @@ export default class GameScene extends Phaser.Scene {
         const pickup = this.pickups.get(x, y);
         if (pickup) pickup.spawn(x, y, Phaser.Utils.Array.GetRandom(POWERUPS.kinds));
     }
-
-    // Colisiones
 
     onBulletHitsEnemy(bullet, enemy) {
         if (!bullet.active || !enemy.active) return;
@@ -257,7 +233,6 @@ export default class GameScene extends Phaser.Scene {
         }
     }
 
-    // Muerte con puntos (por bala o por el súper)
     killEnemy(enemy) {
         const before = this.combo.multiplier;
         const multiplier = this.combo.kill();
@@ -285,7 +260,6 @@ export default class GameScene extends Phaser.Scene {
 
     onEnemyBulletHitsPlayer(player, bullet) {
         if (!bullet.active) return;
-        // Si el jugador es invulnerable, la bala lo atraviesa
         if (this.hurtPlayer()) bullet.kill();
     }
 
@@ -293,7 +267,6 @@ export default class GameScene extends Phaser.Scene {
         if (this.boss.state !== 'dying') this.hurtPlayer();
     }
 
-    // Devuelve true si el golpe contó (daño o escudo)
     hurtPlayer() {
         const result = this.player.hit();
         if (result === 'hurt') {
@@ -310,7 +283,6 @@ export default class GameScene extends Phaser.Scene {
         const { x, y, kind } = pickup;
         pickup.kill();
 
-        // El HUD hace volar el perrito o el power-up hasta su lugar
         const camera = this.cameras.main;
         this.registry.set('collect', {
             kind,
@@ -325,7 +297,6 @@ export default class GameScene extends Phaser.Scene {
             this.registry.inc('score', RESCUE.points);
             this.fx.rescued(x, y, healed);
         } else if (kind === 'super') {
-            // El collar llena el súper de una
             this.chargeSuper(1);
             this.fx.poweredUp(x, y, kind);
         } else {
@@ -333,8 +304,6 @@ export default class GameScene extends Phaser.Scene {
             this.fx.poweredUp(x, y, kind);
         }
     }
-
-    // Súper
 
     chargeSuper(amount) {
         if (this.superMeter >= 1) return;
@@ -351,10 +320,9 @@ export default class GameScene extends Phaser.Scene {
 
         const { x, y } = this.player;
         this.player.protect(SUPER.invulnerable);
-        this.player.playAction('super');   // toma aire y ladra
+        this.player.playAction('super');
         this.fx.superBlast(x, y);
 
-        // El daño llega cuando la onda ya cubrió la pantalla
         this.time.delayedCall(150, () => {
             this.clearEnemyBullets();
             for (const enemy of this.enemies.getMatching('active', true)) {
@@ -370,8 +338,6 @@ export default class GameScene extends Phaser.Scene {
             bullet.kill();
         }
     }
-
-    // Jefe
 
     startBoss() {
         if (this.isGameOver) return;
@@ -397,7 +363,7 @@ export default class GameScene extends Phaser.Scene {
                 this.player.celebrate();
                 this.slowMotion(0.25, 1400);
                 this.won = true;
-                this.player.invulnerable = true; // ya ganó: nada le hace daño
+                this.player.invulnerable = true;
                 this.clearEnemyBullets();
                 for (const enemy of this.enemies.getMatching('active', true)) {
                     this.fx.enemyKilled(enemy);
@@ -407,7 +373,7 @@ export default class GameScene extends Phaser.Scene {
             this.boss.on('defeated', () => {
                 this.registry.inc('score', BOSS.points);
                 this.fx.popup(this.boss.x, this.boss.y - 60, BOSS.points, 5);
-                this.time.delayedCall(800, () => this.registry.set('bossHp', -1)); // esconde la barra
+                this.time.delayedCall(800, () => this.registry.set('bossHp', -1));
                 this.time.delayedCall(900, () => {
                     this.banner('KNOCKOUT!', '#ffd54f');
                     this.sfx.fanfare();
@@ -417,15 +383,11 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Cine
-
-    // Barras negras, zoom al jefe, tarjeta con su nombre y a pelear
     bossIntro() {
         const camera = this.cameras.main;
         const { width, height } = this.scale;
-        const INTRO_TIME = 6000; // por si acaso; se acorta cuando termina
+        const INTRO_TIME = 6000;
 
-        // El perrito se acomoda a la izquierda mientras el jefe se presenta
         this.player.protect(INTRO_TIME, false);
         this.player.locked = true;
         this.tweens.add({ targets: this.player, x: 170, y: height / 2, duration: 1200, ease: 'Sine.easeInOut' });
@@ -444,26 +406,25 @@ export default class GameScene extends Phaser.Scene {
                 this.registry.set('cinema', false);
                 this.time.delayedCall(500, () => {
                     this.player.locked = false;
-                    this.player.protect(600, false); // un respiro antes del primer ataque
+                    this.player.protect(600, false);
                     this.boss.startFight();
                 });
             });
         });
     }
 
-    // Cámara lenta con zoom (el golpe final al jefe). realMs: cuánto dura en tiempo real
     slowMotion(scale, realMs) {
         const camera = this.cameras.main;
         const { width, height } = this.scale;
 
         this.time.timeScale = scale;
         this.tweens.timeScale = scale;
-        this.physics.world.timeScale = 1 / scale; // en Arcade, más alto = más lento
+        this.physics.world.timeScale = 1 / scale;
         this.registry.set('cinema', true);
         camera.zoomTo(1.3, 300, 'Quad.easeOut');
         camera.pan(this.boss.x, this.boss.y, 300, 'Quad.easeOut');
 
-        // El reloj de la escena va lento, así que se compensa
+        // The scene clock runs slow, so compensate
         this.time.delayedCall(realMs * scale, () => {
             this.time.timeScale = 1;
             this.tweens.timeScale = 1;
@@ -474,8 +435,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Pausa y salida
-
     pauseGame() {
         if (this.isGameOver || this.won || this.leaving || !this.scene.isActive()) return;
         this.music.restore(0.4, 200);
@@ -483,7 +442,6 @@ export default class GameScene extends Phaser.Scene {
         this.scene.launch('PauseScene');
     }
 
-    // Cierra el iris sobre el jugador y después cambia de escena
     leave(onClosed) {
         if (this.leaving) return;
         this.leaving = true;
@@ -501,8 +459,6 @@ export default class GameScene extends Phaser.Scene {
         });
     }
 
-    // Fin de la partida
-
     gameOver() {
         this.isGameOver = true;
         this.combo.break();
@@ -513,7 +469,6 @@ export default class GameScene extends Phaser.Scene {
         this.time.delayedCall(1800, () => this.finish(false));
     }
 
-    // Guarda el récord y abre la pantalla de resultados
     finish(win) {
         this.registry.set('playing', false);
         const score = this.registry.get('score');
@@ -521,7 +476,6 @@ export default class GameScene extends Phaser.Scene {
         const isNewBest = score > best;
         if (isNewBest) save('best', score);
 
-        // Progreso para la barra al perder: las oleadas valen 70% y el jefe 30%
         const bossProgress = this.boss ? 1 - Math.max(0, this.registry.get('bossHp')) : 0;
         const progress = win ? 1 : this.waves.progress * 0.7 + bossProgress * 0.3;
 
@@ -544,6 +498,6 @@ export default class GameScene extends Phaser.Scene {
 
     explode(x, y, size = 1) {
         const boom = this.explosions.get(x, y);
-        if (boom) boom.boom(x, y, size); // si el pool está lleno, no se ve
+        if (boom) boom.boom(x, y, size);
     }
 }

@@ -2,8 +2,6 @@ import Phaser from 'phaser';
 import { FILM } from '../config/constants.js';
 import { settings } from './settings.js';
 
-// Filtro de "película vieja" (post-proceso en WebGL): grano, parpadeo, rayones,
-// motas de polvo, un toque sepia y viñeta. El grano cambia a 24 fps, como el cine.
 const fragShader = `
 #define SHADER_NAME OLD_FILM_FS
 precision mediump float;
@@ -28,7 +26,6 @@ void main() {
     vec2 uv = outTexCoord;
     vec4 color = texture2D(uMainSampler, uv);
 
-    // Aberración cromática: rojo y azul se separan en los golpes fuertes
     if (uAberration > 0.0) {
         vec2 off = vec2(uAberration * 0.012, uAberration * 0.004);
         color.r = texture2D(uMainSampler, uv + off).r;
@@ -48,14 +45,12 @@ void main() {
 
     color.rgb *= 1.0 + (rand(vec2(frame, 1.7)) - 0.5) * uFlicker;
 
-    // Un rayón vertical que aparece de vez en cuando
     if (rand(vec2(frame, 3.1)) > 1.0 - uScratches) {
         float x = rand(vec2(frame, 9.2));
         float d = abs(uv.x - x);
         color.rgb += smoothstep(0.0012, 0.0, d) * 0.22;
     }
 
-    // Motas de polvo oscuras
     if (rand(floor(uv * uResolution / 3.0) + frame * 7.0) > 0.99965) {
         color.rgb *= 0.35;
     }
@@ -70,7 +65,7 @@ void main() {
 export default class OldFilmPipeline extends Phaser.Renderer.WebGL.Pipelines.PostFXPipeline {
     constructor(game) {
         super({ game, name: 'OldFilm', fragShader });
-        this.aberration = 0;    // lo anima Effects (0 = nada)
+        this.aberration = 0;
     }
 
     onPreRender() {
@@ -85,13 +80,11 @@ export default class OldFilmPipeline extends Phaser.Renderer.WebGL.Pipelines.Pos
     }
 }
 
-// Aplica el filtro a la cámara principal de una escena (solo en WebGL).
-// Se puede llamar otra vez después de cambiarlo en Options.
 export function applyFilm(scene) {
     if (scene.renderer.type !== Phaser.WEBGL) return;
     const camera = scene.cameras.main;
     const on = FILM.enabled && settings.film;
-    const found = camera.getPostPipeline(OldFilmPipeline); // [] si no lo tiene
+    const found = camera.getPostPipeline(OldFilmPipeline);
     const has = Array.isArray(found) ? found.length > 0 : !!found;
     if (on && !has) camera.setPostPipeline(OldFilmPipeline);
     if (!on && has) camera.removePostPipeline(OldFilmPipeline);
